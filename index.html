@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#DC143C">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Turni VVF">
+    <meta name="description" content="Gestione completa turni e straordinari Vigili del Fuoco">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Turni VVF - Gestione Completa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #DC143C;
+            --primary-dark: #B01030;
+            --bg: #F5F5F5;
+            --card: #FFFFFF;
+            --text: #1A1A1A;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --turno-diurno: #60A5FA;
+            --turno-notturno: #6366F1;
+            --ferie: #FCD34D;
+            --malattia: #F87171;
+            --straordinario: #34D399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+        }
+
+        /* Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        /* Contatori */
+        .counter-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .counter-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .counter-label {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .counter-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+        }
+
+        .counter-subtitle {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        /* Settings Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Calendar */
+        .calendar-container {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            grid-auto-rows: auto;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            padding: 8px;
+            text-transform: uppercase;
+            grid-column: span 1;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 80px;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.my-shift {
+            background: #D1FAE5 !important;
+            border-color: #10B981 !important;
+        }
+
+        .calendar-day.my-shift-day {
+            background: #E9D5FF !important;
+            border-color: #A855F7 !important;
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--primary);
+            background: #FEF2F2;
+        }
+
+        .calendar-day.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .day-number {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .day-shifts {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .shift-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 4px;
+            border-radius: 3px;
+            background: #F3F4F6;
+        }
+
+        .shift-label {
+            color: var(--text-light);
+            font-size: 9px;
+        }
+
+        .shift-value {
+            color: var(--primary);
+        }
+
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .event-badge {
+            font-size: 9px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .pdf-icon {
+            font-size: 10px;
+        }
+
+        .event-straordinario { background: var(--straordinario); color: white; }
+        .event-vigilanza-d { background: var(--turno-diurno); color: white; }
+        .event-vigilanza-n { background: var(--turno-notturno); color: white; }
+        .event-ferie { background: var(--ferie); color: #78350F; }
+        .event-l104 { background: #A78BFA; color: white; }
+        .event-h18 { background: #F472B6; color: white; }
+        .event-recupero { background: #FB923C; color: white; }
+
+        /* Detail Panel */
+        .detail-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-date {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .event-item {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .event-item.inviato {
+            background: #FEF3C7;
+            border-color: #F59E0B;
+        }
+
+        .event-item.pagato {
+            background: #D1FAE5;
+            border-color: #10B981;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .status-checkboxes {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .status-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .status-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .status-checkbox label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .event-info {
+            flex: 1;
+        }
+
+        .event-type {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .event-time {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .event-hours {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .delete-event {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .delete-event:hover {
+            background: #FECACA;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                gap: 4px;
+            }
+            
+            .calendar-day {
+                padding: 4px;
+            }
+            
+            .day-number {
+                font-size: 12px;
+            }
+            
+            .event-badge {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🚒</div>
+                <div class="logo-text">
+                    <h1>Turni VVF</h1>
+                    <p>Gestione Completa Turni</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="openSettings()">⚙️ Impostazioni</button>
+                <button class="btn btn-secondary" onclick="openExportModal()">📊 Esporta PDF</button>
+                <button class="btn btn-primary" onclick="openModal()">➕ Nuovo Evento</button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <aside class="sidebar">
+                <!-- Contatori Principali -->
+                <div class="card">
+                    <h2 class="card-title">Questo Mese</h2>
+                    <div class="counter-item">
+                        <div class="counter-label">Ore Lavorate</div>
+                        <div class="counter-value" id="oreMensili">0</div>
+                        <div class="counter-subtitle">ore totali</div>
+                    </div>
+                    <div class="counter-item">
+                        <div class="counter-label">Compenso</div>
+                        <div class="counter-value" id="compensoMensile">€0</div>
+                        <div class="counter-subtitle">lordo maturato</div>
+                    </div>
+                    <div class="counter-item">
+                        <div class="counter-label">Straordinari</div>
+                        <div class="counter-value" id="straordinariMese">0h</div>
+                        <div class="counter-subtitle">ore extra</div>
+                    </div>
+                </div>
+
+                <!-- Ferie -->
+                <div class="card">
+                    <h2 class="card-title">Ferie</h2>
+                    <div class="counter-item">
+                        <div class="counter-label">Residue</div>
+                        <div class="counter-value" id="ferieResidue">0</div>
+                        <div class="counter-subtitle" id="ferieTotali">su 0 giorni</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="ferieProgress" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- L104 -->
+                <div class="card">
+                    <h2 class="card-title">L104 (18:00/mese)</h2>
+                    <div class="counter-item">
+                        <div class="counter-label">Disponibili</div>
+                        <div class="counter-value" id="l104Residue">18:00</div>
+                        <div class="counter-subtitle">questo mese</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="l104Progress" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- H18 -->
+                <div class="card">
+                    <h2 class="card-title">H18 (18:00/anno)</h2>
+                    <div class="counter-item">
+                        <div class="counter-label">Residue</div>
+                        <div class="counter-value" id="h18Residue">18:00</div>
+                        <div class="counter-subtitle">anno corrente</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="h18Progress" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Banca Ore -->
+                <div class="card">
+                    <h2 class="card-title">Banca Ore Recupero</h2>
+                    <div class="counter-item">
+                        <div class="counter-label">Saldo Attuale</div>
+                        <div class="counter-value" id="bancaOre">0h</div>
+                        <div class="counter-subtitle">ore disponibili</div>
+                    </div>
+                </div>
+            </aside>
+
+            <main>
+                <!-- Calendar -->
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <h2 class="calendar-title" id="calendarTitle">Gennaio 2025</h2>
+                        <div class="calendar-nav">
+                            <button class="nav-btn" onclick="previousMonth()">‹</button>
+                            <button class="nav-btn" onclick="today()">Oggi</button>
+                            <button class="nav-btn" onclick="nextMonth()">›</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day-header">Lun</div>
+                        <div class="calendar-day-header">Mar</div>
+                        <div class="calendar-day-header">Mer</div>
+                        <div class="calendar-day-header">Gio</div>
+                        <div class="calendar-day-header">Ven</div>
+                        <div class="calendar-day-header">Sab</div>
+                        <div class="calendar-day-header">Dom</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays" style="margin-top: 8px;">
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="detail-panel" id="detailPanel" style="display: none;">
+                    <div class="detail-header">
+                        <h3 class="detail-date" id="detailDate"></h3>
+                        <button class="btn btn-primary" onclick="openModal()">➕ Aggiungi</button>
+                    </div>
+                    <div class="events-list" id="eventsList"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nuovo Evento -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nuovo Evento</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <form id="eventForm" onsubmit="saveEvent(event)">
+                <div class="form-group">
+                    <label class="form-label">Tipo di Servizio</label>
+                    <select class="form-control" id="tipoServizio" required onchange="updateFormFields()">
+                        <option value="">Seleziona...</option>
+                        <option value="Straordinario Soccorso">Straordinario Soccorso</option>
+                        <option value="Straordinario Convenzione">Straordinario Convenzione/Programmato</option>
+                        <option value="Vigilanza Diurno">Vigilanza Diurno</option>
+                        <option value="Vigilanza Notturno">Vigilanza Notturno</option>
+                        <option value="Missione Soccorso">Missione Soccorso</option>
+                        <option value="Missione Ordinario">Missione Ordinario</option>
+                        <option value="Missione Sostituzione">Missione Sostituzione</option>
+                        <option value="Buono Pasto">Buono Pasto</option>
+                        <option value="Mancato Pasto">Mancato Pasto</option>
+                        <option value="Rimborso Pasto">Rimborso Pasto</option>
+                        <option value="Ore Guida">Ore Guida</option>
+                        <option value="Ore Recupero Fatte">Ore Recupero Fatte</option>
+                        <option value="Ore Recupero Sottratte">Ore Recupero Sottratte</option>
+                        <option value="Ferie">Ferie</option>
+                        <option value="L104">L104</option>
+                        <option value="H18">H18</option>
+                        <option value="CS">CS (Capo Squadra)</option>
+                        <option value="Autista">Autista</option>
+                        <option value="CS Autista">CS Autista</option>
+                        <option value="Responsabile SO">Responsabile SO</option>
+                        <option value="Sala Operativa">Sala Operativa</option>
+                        <option value="Prima">Prima</option>
+                        <option value="Seconda">Seconda</option>
+                        <option value="1 Appoggio">1 Appoggio</option>
+                        <option value="2 Appoggio">2 Appoggio</option>
+                        <option value="SAPR">SAPR</option>
+                        <option value="TAS">TAS</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data</label>
+                    <input type="date" class="form-control" id="dataEvento" required>
+                </div>
+
+                <div class="form-row" id="timeFields">
+                    <div class="form-group">
+                        <label class="form-label">Ora Inizio</label>
+                        <input type="time" class="form-control" id="oraInizio">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ora Fine</label>
+                        <input type="time" class="form-control" id="oraFine">
+                    </div>
+                </div>
+
+                <div class="form-group" id="l104h18Fields" style="display: none;">
+                    <label class="form-label">Ore e Minuti</label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="number" class="form-control" id="l104h18Ore" min="0" max="18" placeholder="Ore" value="0">
+                        </div>
+                        <div class="form-group">
+                            <input type="number" class="form-control" id="l104h18Minuti" min="0" max="59" placeholder="Minuti" value="0">
+                        </div>
+                    </div>
+                    <small style="color: var(--text-light); font-size: 12px;">Inserisci ore e minuti separatamente (es: 11 ore e 3 minuti)</small>
+                </div>
+
+                <div class="form-group" id="turnoTypeField" style="display: none;">
+                    <label class="form-label">Tipo Turno</label>
+                    <select class="form-control" id="turnoType">
+                        <option value="intero">Turno Intero (24h)</option>
+                        <option value="diurno">Turno Diurno (08:00-20:00)</option>
+                        <option value="notturno">Turno Notturno (20:00-08:00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="quantitaField" style="display: none;">
+                    <label class="form-label">Quantità (giorni/ore)</label>
+                    <input type="number" class="form-control" id="quantita" min="0.5" step="0.5" value="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Note (opzionale)</label>
+                    <input type="text" class="form-control" id="noteEvento" placeholder="Aggiungi note...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Allega PDF (opzionale)</label>
+                    <input type="file" class="form-control" id="pdfFile" accept=".pdf">
+                    <small style="color: var(--text-light); font-size: 12px;">Carica un PDF relativo a questo evento (max 5MB)</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
+                    💾 Salva Evento
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Impostazioni -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Impostazioni</h2>
+                <button class="modal-close" onclick="closeSettings()">×</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('turno-tab')">Il Mio Turno</button>
+                <button class="tab" onclick="switchTab('tariffe-tab')">Tariffe</button>
+                <button class="tab" onclick="switchTab('ferie-tab')">Ferie</button>
+                <button class="tab" onclick="switchTab('recupero-tab')">Recupero</button>
+                <button class="tab" onclick="switchTab('cloud-tab')">Cloud Sync</button>
+                <button class="tab" onclick="switchTab('reset-tab')">Reset</button>
+            </div>
+
+            <div id="turno-tab" class="tab-content active">
+                <div class="form-group">
+                    <label class="form-label">Il Mio Turno</label>
+                    <select class="form-control" id="mioTurno">
+                        <option value="">Seleziona turno...</option>
+                        <option value="A">Turno A</option>
+                        <option value="B">Turno B</option>
+                        <option value="C">Turno C</option>
+                        <option value="D">Turno D</option>
+                    </select>
+                    <small style="color: var(--text-light); font-size: 12px;">Il tuo turno verrà evidenziato nel calendario</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Il Mio Salto</label>
+                    <select class="form-control" id="mioSalto">
+                        <option value="">Seleziona salto...</option>
+                        <option value="1">Salto 1</option>
+                        <option value="2">Salto 2</option>
+                        <option value="3">Salto 3</option>
+                        <option value="4">Salto 4</option>
+                        <option value="5">Salto 5</option>
+                        <option value="6">Salto 6</option>
+                        <option value="7">Salto 7</option>
+                        <option value="8">Salto 8</option>
+                    </select>
+                    <small style="color: var(--text-light); font-size: 12px;">Il giorno del tuo turno sarà evidenziato in viola</small>
+                </div>
+                <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; margin-top: 12px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 20px; height: 20px; background: #D1FAE5; border: 1px solid #10B981; border-radius: 4px;"></div>
+                            <span>Tutti i turni con la tua lettera (es: A1, A2, A4...)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 20px; height: 20px; background: #E9D5FF; border: 1px solid #A855F7; border-radius: 4px;"></div>
+                            <span>Esattamente il tuo turno+salto (es: A3)</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="salvaImpostazioniTurno()">
+                    💾 Salva Turno
+                </button>
+            </div>
+
+            <div id="tariffe-tab" class="tab-content">
+                <p style="color: var(--text-light); margin-bottom: 16px; font-size: 13px;">
+                    Configura le tariffe orarie per ciascun tipo di servizio. Lascia vuoto per non calcolare il compenso.
+                </p>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <div class="form-group">
+                        <label class="form-label">Straordinario Soccorso (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaStraordinarioSoccorso" step="0.01" min="0" placeholder="es: 13.80">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Straordinario Convenzione (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaStraordinarioConvenzione" step="0.01" min="0" placeholder="es: 13.80">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vigilanza Diurno (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaVigilanzaDiurno" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vigilanza Notturno (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaVigilanziNotturno" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Missione (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaMissione" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ore Guida (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaOreGuida" step="0.01" min="0" placeholder="es: 13.80">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Buono Pasto (€ fisso)</label>
+                        <input type="number" class="form-control" id="tariffaBuonoPasto" step="0.01" min="0" placeholder="es: 7.00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mancato Pasto (€ fisso)</label>
+                        <input type="number" class="form-control" id="tariffaMancatoPasto" step="0.01" min="0" placeholder="es: 32.00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rimborso Pasto (€ fisso)</label>
+                        <input type="number" class="form-control" id="tariffaRimborsoPasto" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CS/Autista/SAPR/TAS (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaQualifiche" step="0.01" min="0">
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="salvaImpostazioniTariffe()">
+                    💾 Salva Tariffe
+                </button>
+            </div>
+
+            <div id="ferie-tab" class="tab-content">
+                <div class="form-group">
+                    <label class="form-label">Ferie Anno Corrente</label>
+                    <input type="number" class="form-control" id="ferieAnnoCorrente" min="0" value="27">
+                    <small style="color: var(--text-light); font-size: 12px;">Giorni di ferie spettanti quest'anno</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ferie Residue Anno Precedente</label>
+                    <input type="number" class="form-control" id="ferieResiduePrecedente" min="0" value="0">
+                    <small style="color: var(--text-light); font-size: 12px;">Giorni non goduti l'anno scorso</small>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="salvaImpostazioniFerie()">
+                    💾 Salva Ferie
+                </button>
+            </div>
+
+            <div id="recupero-tab" class="tab-content">
+                <div class="form-group">
+                    <label class="form-label">Ore Recupero Residue Anno Precedente</label>
+                    <input type="number" class="form-control" id="oreRecuperoResidue" min="0" step="0.5" value="0">
+                    <small style="color: var(--text-light); font-size: 12px;">Ore di recupero disponibili dall'anno precedente</small>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="salvaImpostazioniRecupero()">
+                    💾 Salva Recupero
+                </button>
+            </div>
+
+            <div id="cloud-tab" class="tab-content">
+                <p style="color: var(--text-light); margin-bottom: 16px; font-size: 13px;">
+                    Sincronizza i tuoi dati su cloud per backup automatico e accesso da più dispositivi.
+                </p>
+                
+                <div style="background: #FEF3C7; border: 1px solid #F59E0B; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                    ⚠️ <strong>Importante:</strong> I dati vengono salvati come file JSON. Mantieni la cartella sincronizzata per evitare perdite di dati.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Servizio Cloud</label>
+                    <select class="form-control" id="cloudService">
+                        <option value="">Nessuno (solo locale)</option>
+                        <option value="manual">Backup/Ripristino Manuale</option>
+                    </select>
+                    <small style="color: var(--text-light); font-size: 12px;">
+                        Le API cloud richiedono autenticazione. Usa backup manuale per scaricare/caricare i dati.
+                    </small>
+                </div>
+
+                <div id="manualBackupSection" style="display: none; margin-top: 20px;">
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary" onclick="scaricaBackup()" style="width: 100%;">
+                            ☁️ Scarica Backup Completo
+                        </button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('fileRestore').click()" style="width: 100%;">
+                            📥 Carica Backup
+                        </button>
+                        <input type="file" id="fileRestore" accept=".json" style="display: none;" onchange="ripristinaBackup(event)">
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 12px; background: #F3F4F6; border-radius: 8px; font-size: 13px;">
+                        <strong>Come funziona:</strong>
+                        <ul style="margin: 8px 0 0 20px; color: var(--text-light);">
+                            <li>Scarica il backup (file JSON) sul tuo dispositivo</li>
+                            <li>Salvalo su iCloud Drive, Google Drive o OneDrive</li>
+                            <li>Su altri dispositivi, scarica il file e caricalo qui</li>
+                            <li>Il backup include: eventi, impostazioni, PDF allegati</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-light);">
+                        Ultimo backup: <span id="lastBackupTime">Mai</span>
+                    </div>
+                </div>
+
+                <div id="autoSyncInfo" style="margin-top: 20px; padding: 12px; background: #DBEAFE; border: 1px solid #3B82F6; border-radius: 8px; font-size: 13px;">
+                    💡 <strong>Consiglio:</strong> Scarica un backup regolarmente e salvalo nel tuo cloud preferito (iCloud/Drive/OneDrive) per sicurezza.
+                </div>
+            </div>
+
+            <div id="reset-tab" class="tab-content">
+                <p style="color: var(--text-light); margin-bottom: 20px;">
+                    Attenzione: questa operazione cancellerà tutti i dati salvati nell'app.
+                </p>
+                <button class="btn" style="width: 100%; background: #DC2626; color: white;" onclick="resetApp()">
+                    🗑️ Cancella Tutti i Dati
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Esportazione -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Esporta Report PDF</h2>
+                <button class="modal-close" onclick="closeExportModal()">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Periodo</label>
+                <select class="form-control" id="exportPeriod" onchange="updateExportDates()">
+                    <option value="month">Mese Corrente</option>
+                    <option value="custom">Periodo Personalizzato</option>
+                    <option value="year">Anno Corrente</option>
+                    <option value="all">Tutti gli Eventi</option>
+                </select>
+            </div>
+            
+            <div id="customDateFields" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Data Inizio</label>
+                        <input type="date" class="form-control" id="exportDateStart">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data Fine</label>
+                        <input type="date" class="form-control" id="exportDateEnd">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="esportaPDF()">
+                📄 Genera PDF
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        // Dati globali
+        let events = JSON.parse(localStorage.getItem('vvfEvents')) || [];
+        let settings = JSON.parse(localStorage.getItem('vvfSettings')) || {
+            ferieAnnoCorrente: 27,
+            ferieResiduePrecedente: 0,
+            oreRecuperoResidue: 0,
+            mioTurno: '', // A, B, C, D
+            mioSalto: '', // 1-8
+            tariffe: {
+                'Straordinario Soccorso': 13.8,
+                'Straordinario Convenzione': 13.8,
+                'Vigilanza Diurno': 0,
+                'Vigilanza Notturno': 0,
+                'Missione Soccorso': 0,
+                'Missione Ordinario': 0,
+                'Missione Sostituzione': 0,
+                'Ore Guida': 13.8,
+                'Buono Pasto': 7.0,
+                'Mancato Pasto': 32.0,
+                'Rimborso Pasto': 0,
+                'CS': 0,
+                'Autista': 0,
+                'SAPR': 0,
+                'TAS': 0
+            }
+        };
+        let currentDate = new Date();
+        let selectedDate = null;
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCalendar();
+            updateCounters();
+            loadSettings();
+        });
+
+        // Funzione per calcolare i turni
+        function getShiftForDate(date) {
+            // Create base date at noon to avoid timezone issues
+            const baseDate = new Date(2026, 0, 1, 12, 0, 0);
+            const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+            
+            const diffTime = inputDate - baseDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            const shifts = ['B', 'C', 'D', 'A']; // Starting from B on day 0
+            
+            // Determine position in 4-day shift cycle
+            const shiftPosition = diffDays % 4;
+            const dayShiftLetter = shifts[shiftPosition];
+            
+            // Night shift letter is always previous day's shift
+            const nightShiftPosition = (shiftPosition - 1 + 4) % 4;
+            const nightShiftLetter = shifts[nightShiftPosition];
+            
+            // Calculate jump number
+            // Jump changes when we reach shift 'A' (position 3)
+            // So we count how many times we've reached or passed position 3
+            const numAShiftsReached = Math.floor((diffDays + 1) / 4);
+            
+            // Starting jump is 6, increases by 1 each time we reach 'A' shift
+            let dayJump = 6 + numAShiftsReached;
+            // Cycle through 6,7,8,1,2,3,4,5,6...
+            if (dayJump > 8) {
+                dayJump = ((dayJump - 1) % 8) + 1;
+            }
+            
+            // Night jump calculation - follows previous day's day shift
+            let nightJump;
+            if (diffDays === 0) {
+                // First day: both start at 6
+                nightJump = 6;
+            } else {
+                // Night jump is the day jump from previous day
+                const prevDayNumAShiftsReached = Math.floor(diffDays / 4);
+                nightJump = 6 + prevDayNumAShiftsReached;
+                if (nightJump > 8) {
+                    nightJump = ((nightJump - 1) % 8) + 1;
+                }
+            }
+            
+            return {
+                day: dayShiftLetter + dayJump,
+                night: nightShiftLetter + nightJump
+            };
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Update title
+            const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+                              'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+            document.getElementById('calendarTitle').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startingDayOfWeek = firstDay.getDay() || 7; // Make Monday = 1
+            
+            const daysInMonth = lastDay.getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            // Previous month days
+            for (let i = startingDayOfWeek - 1; i > 0; i--) {
+                const day = prevMonthDays - i + 1;
+                const dayElement = createDayElement(day, true, year, month - 1);
+                calendarDays.appendChild(dayElement);
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = createDayElement(day, false, year, month);
+                calendarDays.appendChild(dayElement);
+            }
+            
+            // Next month days
+            const totalCells = calendarDays.children.length;
+            const remainingCells = 42 - totalCells;
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayElement = createDayElement(day, true, year, month + 1);
+                calendarDays.appendChild(dayElement);
+            }
+        }
+
+        function createDayElement(day, otherMonth, year, month) {
+            const div = document.createElement('div');
+            div.className = 'calendar-day';
+            if (otherMonth) div.classList.add('other-month');
+            
+            // Create date at noon to avoid timezone issues
+            const date = new Date(year, month, day, 12, 0, 0);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // Check if today
+            const today = new Date();
+            const todayStr = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0).toISOString().split('T')[0];
+            if (dateStr === todayStr) {
+                div.classList.add('today');
+            }
+            
+            // Day number
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            div.appendChild(dayNumber);
+            
+            // Add shifts - use the date object directly for calculation
+            const shifts = getShiftForDate(date);
+            
+            // Check if this is user's shift
+            if (settings.mioTurno) {
+                const userShift = settings.mioTurno + settings.mioSalto;
+                const dayShiftLetter = shifts.day.charAt(0); // Get letter (A, B, C, D)
+                const nightShiftLetter = shifts.night.charAt(0);
+                
+                // Green: any shift with user's letter (e.g., all A shifts: A1, A2, A3...)
+                const isMyShiftLetter = dayShiftLetter === settings.mioTurno || nightShiftLetter === settings.mioTurno;
+                
+                // Purple: exactly user's shift+jump (e.g., A3 only)
+                const isExactMyShift = shifts.day === userShift || shifts.night === userShift;
+                
+                if (!otherMonth) {
+                    if (isExactMyShift) {
+                        // Purple for exact match (A3)
+                        div.classList.add('my-shift-day');
+                    } else if (isMyShiftLetter) {
+                        // Green for any shift with user's letter (A1, A2, A4...)
+                        div.classList.add('my-shift');
+                    }
+                }
+            }
+            
+            const shiftsContainer = document.createElement('div');
+            shiftsContainer.className = 'day-shifts';
+            shiftsContainer.innerHTML = `
+                <div class="shift-row">
+                    <span class="shift-label">D</span>
+                    <span class="shift-value">${shifts.day}</span>
+                </div>
+                <div class="shift-row">
+                    <span class="shift-label">N</span>
+                    <span class="shift-value">${shifts.night}</span>
+                </div>
+            `;
+            div.appendChild(shiftsContainer);
+            
+            // Events for this day
+            const dayEvents = events.filter(e => e.data === dateStr);
+            if (dayEvents.length > 0) {
+                const eventsContainer = document.createElement('div');
+                eventsContainer.className = 'day-events';
+                
+                dayEvents.slice(0, 2).forEach(event => {
+                    const badge = document.createElement('div');
+                    badge.className = 'event-badge';
+                    
+                    let badgeText = '';
+                    
+                    if (event.tipo.includes('Straordinario')) {
+                        badge.classList.add('event-straordinario');
+                        badgeText = 'STR';
+                    } else if (event.tipo.includes('Vigilanza Diurno')) {
+                        badge.classList.add('event-vigilanza-d');
+                        badgeText = 'VIG D';
+                    } else if (event.tipo.includes('Vigilanza Notturno')) {
+                        badge.classList.add('event-vigilanza-n');
+                        badgeText = 'VIG N';
+                    } else if (event.tipo === 'Ferie') {
+                        badge.classList.add('event-ferie');
+                        badgeText = 'FERIE';
+                    } else if (event.tipo === 'L104') {
+                        badge.classList.add('event-l104');
+                        badgeText = 'L104';
+                    } else if (event.tipo === 'H18') {
+                        badge.classList.add('event-h18');
+                        badgeText = 'H18';
+                    } else if (event.tipo.includes('Recupero')) {
+                        badge.classList.add('event-recupero');
+                        badgeText = 'REC';
+                    } else {
+                        badge.classList.add('event-straordinario');
+                        badgeText = event.tipo.substring(0, 3);
+                    }
+                    
+                    // Add PDF indicator if attached
+                    if (event.pdf) {
+                        badge.innerHTML = `<span>${badgeText}</span><span class="pdf-icon">📄</span>`;
+                    } else {
+                        badge.textContent = badgeText;
+                    }
+                    
+                    eventsContainer.appendChild(badge);
+                });
+                
+                div.appendChild(eventsContainer);
+            }
+            
+            div.onclick = () => selectDate(dateStr);
+            
+            return div;
+        }
+
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            
+            // Update UI
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            showDayDetails(dateStr);
+        }
+
+        function showDayDetails(dateStr) {
+            const date = new Date(dateStr);
+            const dayEvents = events.filter(e => e.data === dateStr);
+            
+            document.getElementById('detailPanel').style.display = 'block';
+            document.getElementById('detailDate').textContent = date.toLocaleDateString('it-IT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const eventsList = document.getElementById('eventsList');
+            
+            if (dayEvents.length === 0) {
+                eventsList.innerHTML = '<div class="empty-state">Nessun evento per questo giorno</div>';
+            } else {
+                eventsList.innerHTML = dayEvents.map(event => {
+                    const statusClass = event.pagato ? 'pagato' : (event.inviato ? 'inviato' : '');
+                    
+                    // Format ore in HH:mm for L104 and H18
+                    let oreDisplay = '';
+                    if (event.ore) {
+                        if (event.tipo === 'L104' || event.tipo === 'H18') {
+                            const ore = Math.floor(event.ore);
+                            const minuti = Math.round((event.ore - ore) * 60);
+                            oreDisplay = `${ore}:${minuti.toString().padStart(2, '0')}`;
+                        } else {
+                            oreDisplay = `${event.ore.toFixed(2)}h`;
+                        }
+                    }
+                    
+                    // Format time display
+                    let timeDisplay = '';
+                    if (event.oraInizio && event.oraFine) {
+                        timeDisplay = `${event.oraInizio} - ${event.oraFine}`;
+                    } else if (event.quantita) {
+                        if (event.tipo === 'L104' || event.tipo === 'H18') {
+                            const ore = Math.floor(event.quantita);
+                            const minuti = Math.round((event.quantita - ore) * 60);
+                            timeDisplay = `${ore}:${minuti.toString().padStart(2, '0')}`;
+                        } else {
+                            timeDisplay = `${event.quantita} ${event.tipo === 'Ferie' ? 'giorni' : 'ore'}`;
+                        }
+                    } else {
+                        timeDisplay = 'Tutto il giorno';
+                    }
+                    
+                    return `
+                    <div class="event-item ${statusClass}">
+                        <div class="event-info">
+                            <div class="event-type">
+                                ${event.tipo}
+                                ${event.pdf ? '<span style="color: #DC2626; margin-left: 6px;">📄</span>' : ''}
+                            </div>
+                            <div class="event-time">
+                                ${timeDisplay}
+                                ${event.note ? `<br><small>${event.note}</small>` : ''}
+                                ${event.pdf ? `<br><button class="btn btn-secondary" style="margin-top: 8px; padding: 6px 12px; font-size: 12px;" onclick="downloadPDF(${event.id}, '${event.pdfName}')">📥 Scarica ${event.pdfName}</button>` : ''}
+                            </div>
+                        </div>
+                        ${oreDisplay ? `<div class="event-hours">${oreDisplay}</div>` : ''}
+                        <div class="event-actions">
+                            <div class="status-checkboxes">
+                                <div class="status-checkbox">
+                                    <input type="checkbox" id="inviato-${event.id}" ${event.inviato ? 'checked' : ''} onchange="toggleStatus(${event.id}, 'inviato')">
+                                    <label for="inviato-${event.id}">Inviato</label>
+                                </div>
+                                <div class="status-checkbox">
+                                    <input type="checkbox" id="pagato-${event.id}" ${event.pagato ? 'checked' : ''} onchange="toggleStatus(${event.id}, 'pagato')">
+                                    <label for="pagato-${event.id}">Pagato</label>
+                                </div>
+                            </div>
+                            <button class="delete-event" onclick="deleteEvent(${event.id})">Elimina</button>
+                        </div>
+                    </div>
+                `;}).join('');
+            }
+        }
+        
+        function toggleStatus(eventId, statusType) {
+            const event = events.find(e => e.id === eventId);
+            if (event) {
+                event[statusType] = !event[statusType];
+                localStorage.setItem('vvfEvents', JSON.stringify(events));
+                
+                // Refresh the detail view
+                if (selectedDate) {
+                    showDayDetails(selectedDate);
+                }
+            }
+        }
+        
+        function downloadPDF(eventId, filename) {
+            const event = events.find(e => e.id === eventId);
+            if (event && event.pdf) {
+                const link = document.createElement('a');
+                link.href = event.pdf;
+                link.download = filename || 'documento.pdf';
+                link.click();
+            }
+        }
+
+        function updateCounters() {
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            // Filter events for current month
+            const monthEvents = events.filter(e => {
+                const eventDate = new Date(e.data);
+                return eventDate.getMonth() === currentMonth && 
+                       eventDate.getFullYear() === currentYear;
+            });
+            
+            // Ore mensili
+            const oreMensili = monthEvents.reduce((sum, e) => sum + (e.ore || 0), 0);
+            document.getElementById('oreMensili').textContent = oreMensili.toFixed(1);
+            
+            // Compenso mensile
+            const compenso = monthEvents.reduce((sum, e) => sum + (e.compenso || 0), 0);
+            document.getElementById('compensoMensile').textContent = `€${compenso.toFixed(2)}`;
+            
+            // Straordinari
+            const straordinari = monthEvents
+                .filter(e => e.tipo.includes('Straordinario'))
+                .reduce((sum, e) => sum + (e.ore || 0), 0);
+            document.getElementById('straordinariMese').textContent = `${straordinari.toFixed(1)}h`;
+            
+            // Ferie
+            const ferieTotali = settings.ferieAnnoCorrente + settings.ferieResiduePrecedente;
+            const ferieUsate = events.filter(e => e.tipo === 'Ferie' && 
+                new Date(e.data).getFullYear() === currentYear)
+                .reduce((sum, e) => sum + (e.quantita || 1), 0);
+            const ferieResidue = ferieTotali - ferieUsate;
+            
+            document.getElementById('ferieResidue').textContent = ferieResidue;
+            document.getElementById('ferieTotali').textContent = `su ${ferieTotali} giorni`;
+            document.getElementById('ferieProgress').style.width = `${(ferieResidue / ferieTotali) * 100}%`;
+            
+            // L104 (18 ore mensili)
+            const l104Usate = monthEvents
+                .filter(e => e.tipo === 'L104')
+                .reduce((sum, e) => sum + (e.ore || 0), 0);
+            const l104Residue = 18 - l104Usate;
+            
+            const l104ResidueOre = Math.floor(l104Residue);
+            const l104ResidueMin = Math.round((l104Residue - l104ResidueOre) * 60);
+            
+            document.getElementById('l104Residue').textContent = `${l104ResidueOre}:${l104ResidueMin.toString().padStart(2, '0')}`;
+            document.getElementById('l104Progress').style.width = `${(l104Residue / 18) * 100}%`;
+            
+            // H18 (18 ore annue)
+            const h18Usate = events
+                .filter(e => e.tipo === 'H18' && new Date(e.data).getFullYear() === currentYear)
+                .reduce((sum, e) => sum + (e.ore || 0), 0);
+            const h18Residue = 18 - h18Usate;
+            
+            const h18ResidueOre = Math.floor(h18Residue);
+            const h18ResidueMin = Math.round((h18Residue - h18ResidueOre) * 60);
+            
+            document.getElementById('h18Residue').textContent = `${h18ResidueOre}:${h18ResidueMin.toString().padStart(2, '0')}`;
+            document.getElementById('h18Progress').style.width = `${(h18Residue / 18) * 100}%`;
+            
+            // Banca ore
+            const oreRecuperoFatte = events
+                .filter(e => e.tipo === 'Ore Recupero Fatte')
+                .reduce((sum, e) => sum + (e.ore || 0), 0);
+            const oreRecuperoSottratte = events
+                .filter(e => e.tipo === 'Ore Recupero Sottratte')
+                .reduce((sum, e) => sum + (e.ore || 0), 0);
+            const bancaOre = settings.oreRecuperoResidue + oreRecuperoFatte - oreRecuperoSottratte;
+            
+            document.getElementById('bancaOre').textContent = `${bancaOre.toFixed(1)}h`;
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+            updateCounters();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+            updateCounters();
+        }
+
+        function today() {
+            currentDate = new Date();
+            renderCalendar();
+            updateCounters();
+        }
+
+        function openModal() {
+            document.getElementById('eventModal').classList.add('active');
+            if (selectedDate) {
+                document.getElementById('dataEvento').value = selectedDate;
+            } else {
+                document.getElementById('dataEvento').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('active');
+            document.getElementById('eventForm').reset();
+            document.getElementById('timeFields').style.display = 'none';
+            document.getElementById('quantitaField').style.display = 'none';
+            document.getElementById('l104h18Fields').style.display = 'none';
+            document.getElementById('turnoTypeField').style.display = 'none';
+        }
+
+        function updateFormFields() {
+            const tipo = document.getElementById('tipoServizio').value;
+            const timeFields = document.getElementById('timeFields');
+            const quantitaField = document.getElementById('quantitaField');
+            const l104h18Fields = document.getElementById('l104h18Fields');
+            const turnoTypeField = document.getElementById('turnoTypeField');
+            
+            // Reset all fields
+            timeFields.style.display = 'none';
+            quantitaField.style.display = 'none';
+            l104h18Fields.style.display = 'none';
+            turnoTypeField.style.display = 'none';
+            
+            // L104 e H18 - ore e minuti separati
+            if (tipo === 'L104' || tipo === 'H18') {
+                l104h18Fields.style.display = 'block';
+                document.getElementById('l104h18Ore').value = 0;
+                document.getElementById('l104h18Minuti').value = 0;
+            }
+            // Voci con selezione turno automatico (CS, Autista, SAPR, TAS, etc)
+            else if (tipo === 'CS' || tipo === 'Autista' || tipo === 'CS Autista' || 
+                     tipo === 'Responsabile SO' || tipo === 'Sala Operativa' ||
+                     tipo === 'Prima' || tipo === 'Seconda' || 
+                     tipo === '1 Appoggio' || tipo === '2 Appoggio' ||
+                     tipo === 'SAPR' || tipo === 'TAS') {
+                turnoTypeField.style.display = 'block';
+            }
+            // Ferie - solo quantità giorni
+            else if (tipo === 'Ferie') {
+                quantitaField.style.display = 'block';
+                document.getElementById('quantita').value = 1;
+            }
+            // Buono Pasto, Mancato Pasto - quantità
+            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Rimborso Pasto') {
+                quantitaField.style.display = 'block';
+                document.getElementById('quantita').value = 1;
+            }
+            // Tutto il resto - ore inizio/fine
+            else if (tipo) {
+                timeFields.style.display = 'grid';
+            }
+        }
+
+        function saveEvent(e) {
+            e.preventDefault();
+            
+            const tipo = document.getElementById('tipoServizio').value;
+            const data = document.getElementById('dataEvento').value;
+            let oraInizio = document.getElementById('oraInizio').value;
+            let oraFine = document.getElementById('oraFine').value;
+            const quantita = parseFloat(document.getElementById('quantita').value) || 1;
+            const note = document.getElementById('noteEvento').value;
+            const pdfFileInput = document.getElementById('pdfFile');
+            
+            let ore = 0;
+            let compenso = 0;
+            
+            // L104 e H18 - calcola ore da ore e minuti
+            if (tipo === 'L104' || tipo === 'H18') {
+                const oreInput = parseInt(document.getElementById('l104h18Ore').value) || 0;
+                const minutiInput = parseInt(document.getElementById('l104h18Minuti').value) || 0;
+                ore = oreInput + (minutiInput / 60);
+            }
+            // Voci con turno automatico
+            else if (tipo === 'CS' || tipo === 'Autista' || tipo === 'CS Autista' || 
+                     tipo === 'Responsabile SO' || tipo === 'Sala Operativa' ||
+                     tipo === 'Prima' || tipo === 'Seconda' || 
+                     tipo === '1 Appoggio' || tipo === '2 Appoggio' ||
+                     tipo === 'SAPR' || tipo === 'TAS') {
+                const turnoType = document.getElementById('turnoType').value;
+                
+                if (turnoType === 'intero') {
+                    oraInizio = '08:00';
+                    oraFine = '08:00'; // 24 ore
+                    ore = 24;
+                } else if (turnoType === 'diurno') {
+                    oraInizio = '08:00';
+                    oraFine = '20:00';
+                    ore = 12;
+                } else if (turnoType === 'notturno') {
+                    oraInizio = '20:00';
+                    oraFine = '08:00';
+                    ore = 12;
+                }
+            }
+            // Ferie - quantità giorni
+            else if (tipo === 'Ferie') {
+                ore = quantita;
+            }
+            // Pasti - quantità
+            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Rimborso Pasto') {
+                ore = quantita;
+            }
+            // Calcolo ore normale da orari
+            else if (oraInizio && oraFine) {
+                const [h1, m1] = oraInizio.split(':').map(Number);
+                const [h2, m2] = oraFine.split(':').map(Number);
+                ore = ((h2 * 60 + m2) - (h1 * 60 + m1)) / 60;
+                if (ore < 0) ore += 24;
+            }
+            
+            // Calculate compensation
+            const tariffaKey = getTariffaKey(tipo);
+            if (tariffaKey && settings.tariffe[tariffaKey]) {
+                if (ore > 0) {
+                    compenso = ore * settings.tariffe[tariffaKey];
+                } else {
+                    compenso = settings.tariffe[tariffaKey] * quantita;
+                }
+            }
+            
+            // Handle PDF file
+            const file = pdfFileInput.files[0];
+            if (file) {
+                // Check file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Il file PDF è troppo grande. Massimo 5MB consentiti.');
+                    return;
+                }
+                
+                // Check file type
+                if (file.type !== 'application/pdf') {
+                    alert('Solo file PDF sono consentiti.');
+                    return;
+                }
+                
+                // Read file as base64
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const pdfData = event.target.result;
+                    
+                    const newEvent = {
+                        id: Date.now(),
+                        tipo,
+                        data,
+                        oraInizio,
+                        oraFine,
+                        quantita: tipo === 'L104' || tipo === 'H18' ? ore : quantita,
+                        ore: ore > 0 ? ore : quantita,
+                        compenso,
+                        note,
+                        pdf: pdfData,
+                        pdfName: file.name
+                    };
+                    
+                    saveEventToStorage(newEvent);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // No PDF attached
+                const newEvent = {
+                    id: Date.now(),
+                    tipo,
+                    data,
+                    oraInizio,
+                    oraFine,
+                    quantita: tipo === 'L104' || tipo === 'H18' ? ore : quantita,
+                    ore: ore > 0 ? ore : quantita,
+                    compenso,
+                    note
+                };
+                
+                saveEventToStorage(newEvent);
+            }
+        }
+        
+        function saveEventToStorage(event) {
+            // Add status fields
+            event.inviato = false;
+            event.pagato = false;
+            
+            events.push(event);
+            localStorage.setItem('vvfEvents', JSON.stringify(events));
+            
+            closeModal();
+            renderCalendar();
+            updateCounters();
+            
+            if (selectedDate === event.data) {
+                showDayDetails(event.data);
+            }
+        }
+
+        function deleteEvent(id) {
+            if (confirm('Sei sicuro di voler eliminare questo evento?')) {
+                events = events.filter(e => e.id !== id);
+                localStorage.setItem('vvfEvents', JSON.stringify(events));
+                renderCalendar();
+                updateCounters();
+                if (selectedDate) {
+                    showDayDetails(selectedDate);
+                }
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function getTariffaKey(tipo) {
+            // Map event types to tariff keys
+            const mapping = {
+                'Straordinario Soccorso': 'Straordinario Soccorso',
+                'Straordinario Convenzione': 'Straordinario Convenzione',
+                'Vigilanza Diurno': 'Vigilanza Diurno',
+                'Vigilanza Notturno': 'Vigilanza Notturno',
+                'Missione Soccorso': 'Missione Soccorso',
+                'Missione Ordinario': 'Missione Ordinario',
+                'Missione Sostituzione': 'Missione Sostituzione',
+                'Ore Guida': 'Ore Guida',
+                'Buono Pasto': 'Buono Pasto',
+                'Mancato Pasto': 'Mancato Pasto',
+                'Rimborso Pasto': 'Rimborso Pasto',
+                'CS': 'CS',
+                'Autista': 'Autista',
+                'CS Autista': 'CS',
+                'SAPR': 'SAPR',
+                'TAS': 'TAS',
+                'Responsabile SO': 'CS',
+                'Sala Operativa': 'CS',
+                'Prima': 'CS',
+                'Seconda': 'CS',
+                '1 Appoggio': 'CS',
+                '2 Appoggio': 'CS'
+            };
+            return mapping[tipo];
+        }
+
+        function loadSettings() {
+            // Initialize tariffe if not exists
+            if (!settings.tariffe) {
+                settings.tariffe = {
+                    'Straordinario Soccorso': 13.8,
+                    'Straordinario Convenzione': 13.8,
+                    'Vigilanza Diurno': 0,
+                    'Vigilanza Notturno': 0,
+                    'Missione Soccorso': 0,
+                    'Missione Ordinario': 0,
+                    'Missione Sostituzione': 0,
+                    'Ore Guida': 13.8,
+                    'Buono Pasto': 7.0,
+                    'Mancato Pasto': 32.0,
+                    'Rimborso Pasto': 0,
+                    'CS': 0,
+                    'Autista': 0,
+                    'SAPR': 0,
+                    'TAS': 0
+                };
+            }
+            
+            document.getElementById('mioTurno').value = settings.mioTurno || '';
+            document.getElementById('mioSalto').value = settings.mioSalto || '';
+            document.getElementById('ferieAnnoCorrente').value = settings.ferieAnnoCorrente;
+            document.getElementById('ferieResiduePrecedente').value = settings.ferieResiduePrecedente;
+            document.getElementById('oreRecuperoResidue').value = settings.oreRecuperoResidue;
+            
+            // Load tariffe
+            document.getElementById('tariffaStraordinarioSoccorso').value = settings.tariffe['Straordinario Soccorso'] || '';
+            document.getElementById('tariffaStraordinarioConvenzione').value = settings.tariffe['Straordinario Convenzione'] || '';
+            document.getElementById('tariffaVigilanzaDiurno').value = settings.tariffe['Vigilanza Diurno'] || '';
+            document.getElementById('tariffaVigilanziNotturno').value = settings.tariffe['Vigilanza Notturno'] || '';
+            document.getElementById('tariffaMissione').value = settings.tariffe['Missione Soccorso'] || '';
+            document.getElementById('tariffaOreGuida').value = settings.tariffe['Ore Guida'] || '';
+            document.getElementById('tariffaBuonoPasto').value = settings.tariffe['Buono Pasto'] || '';
+            document.getElementById('tariffaMancatoPasto').value = settings.tariffe['Mancato Pasto'] || '';
+            document.getElementById('tariffaRimborsoPasto').value = settings.tariffe['Rimborso Pasto'] || '';
+            document.getElementById('tariffaQualifiche').value = settings.tariffe['CS'] || '';
+            
+            // Load cloud settings
+            document.getElementById('cloudService').value = settings.cloudService || '';
+            updateCloudServiceUI();
+            
+            // Add cloud service change listener
+            document.getElementById('cloudService').addEventListener('change', function() {
+                settings.cloudService = this.value;
+                localStorage.setItem('vvfSettings', JSON.stringify(settings));
+                updateCloudServiceUI();
+            });
+            
+            // Load last backup time
+            const lastBackup = localStorage.getItem('lastBackupTime');
+            if (lastBackup) {
+                document.getElementById('lastBackupTime').textContent = new Date(lastBackup).toLocaleString('it-IT');
+            }
+        }
+        
+        function updateCloudServiceUI() {
+            const service = document.getElementById('cloudService').value;
+            const manualSection = document.getElementById('manualBackupSection');
+            
+            if (service === 'manual') {
+                manualSection.style.display = 'block';
+            } else {
+                manualSection.style.display = 'none';
+            }
+        }
+
+        function salvaImpostazioniTurno() {
+            settings.mioTurno = document.getElementById('mioTurno').value;
+            settings.mioSalto = document.getElementById('mioSalto').value;
+            localStorage.setItem('vvfSettings', JSON.stringify(settings));
+            renderCalendar();
+            alert('Impostazioni turno salvate!');
+        }
+
+        function salvaImpostazioniTariffe() {
+            settings.tariffe['Straordinario Soccorso'] = parseFloat(document.getElementById('tariffaStraordinarioSoccorso').value) || 0;
+            settings.tariffe['Straordinario Convenzione'] = parseFloat(document.getElementById('tariffaStraordinarioConvenzione').value) || 0;
+            settings.tariffe['Vigilanza Diurno'] = parseFloat(document.getElementById('tariffaVigilanzaDiurno').value) || 0;
+            settings.tariffe['Vigilanza Notturno'] = parseFloat(document.getElementById('tariffaVigilanziNotturno').value) || 0;
+            settings.tariffe['Missione Soccorso'] = parseFloat(document.getElementById('tariffaMissione').value) || 0;
+            settings.tariffe['Missione Ordinario'] = parseFloat(document.getElementById('tariffaMissione').value) || 0;
+            settings.tariffe['Missione Sostituzione'] = parseFloat(document.getElementById('tariffaMissione').value) || 0;
+            settings.tariffe['Ore Guida'] = parseFloat(document.getElementById('tariffaOreGuida').value) || 0;
+            settings.tariffe['Buono Pasto'] = parseFloat(document.getElementById('tariffaBuonoPasto').value) || 0;
+            settings.tariffe['Mancato Pasto'] = parseFloat(document.getElementById('tariffaMancatoPasto').value) || 0;
+            settings.tariffe['Rimborso Pasto'] = parseFloat(document.getElementById('tariffaRimborsoPasto').value) || 0;
+            const tariffaQualifiche = parseFloat(document.getElementById('tariffaQualifiche').value) || 0;
+            settings.tariffe['CS'] = tariffaQualifiche;
+            settings.tariffe['Autista'] = tariffaQualifiche;
+            settings.tariffe['SAPR'] = tariffaQualifiche;
+            settings.tariffe['TAS'] = tariffaQualifiche;
+            
+            localStorage.setItem('vvfSettings', JSON.stringify(settings));
+            alert('Tariffe salvate! Ricalcola gli eventi esistenti per applicare le nuove tariffe.');
+        }
+
+        function salvaImpostazioniFerie() {
+            settings.ferieAnnoCorrente = parseInt(document.getElementById('ferieAnnoCorrente').value);
+            settings.ferieResiduePrecedente = parseInt(document.getElementById('ferieResiduePrecedente').value);
+            localStorage.setItem('vvfSettings', JSON.stringify(settings));
+            updateCounters();
+            alert('Impostazioni ferie salvate!');
+        }
+
+        function salvaImpostazioniRecupero() {
+            settings.oreRecuperoResidue = parseFloat(document.getElementById('oreRecuperoResidue').value);
+            localStorage.setItem('vvfSettings', JSON.stringify(settings));
+            updateCounters();
+            alert('Impostazioni recupero salvate!');
+        }
+
+        function resetApp() {
+            if (confirm('ATTENZIONE: Questa operazione cancellerà TUTTI i dati. Sei sicuro?')) {
+                localStorage.removeItem('vvfEvents');
+                localStorage.removeItem('vvfSettings');
+                location.reload();
+            }
+        }
+
+        function esportaDati() {
+            // Kept for backward compatibility - now redirects to PDF export
+            openExportModal();
+        }
+
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+            updateExportDates();
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function updateExportDates() {
+            const period = document.getElementById('exportPeriod').value;
+            const customFields = document.getElementById('customDateFields');
+            
+            if (period === 'custom') {
+                customFields.style.display = 'block';
+                const today = new Date();
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                document.getElementById('exportDateStart').value = firstDay.toISOString().split('T')[0];
+                document.getElementById('exportDateEnd').value = today.toISOString().split('T')[0];
+            } else {
+                customFields.style.display = 'none';
+            }
+        }
+
+        function scaricaBackup() {
+            const backupData = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                events: events,
+                settings: settings
+            };
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `turni-vvf-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Save backup time
+            localStorage.setItem('lastBackupTime', new Date().toISOString());
+            document.getElementById('lastBackupTime').textContent = new Date().toLocaleString('it-IT');
+            
+            alert('✅ Backup scaricato! Salvalo su iCloud Drive, Google Drive o OneDrive per sicurezza.');
+        }
+        
+        function ripristinaBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!confirm('⚠️ ATTENZIONE: Questo sostituirà tutti i dati attuali. Continuare?')) {
+                event.target.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    // Validate backup
+                    if (!backupData.events || !backupData.settings) {
+                        throw new Error('File di backup non valido');
+                    }
+                    
+                    // Restore data
+                    events = backupData.events;
+                    settings = backupData.settings;
+                    
+                    localStorage.setItem('vvfEvents', JSON.stringify(events));
+                    localStorage.setItem('vvfSettings', JSON.stringify(settings));
+                    
+                    alert('✅ Backup ripristinato con successo! La pagina verrà ricaricata.');
+                    location.reload();
+                    
+                } catch (error) {
+                    alert('❌ Errore nel ripristino del backup: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function esportaPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Get date range
+            let startDate, endDate;
+            const period = document.getElementById('exportPeriod').value;
+            const today = new Date();
+            
+            if (period === 'month') {
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            } else if (period === 'year') {
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = new Date(today.getFullYear(), 11, 31);
+            } else if (period === 'custom') {
+                startDate = new Date(document.getElementById('exportDateStart').value);
+                endDate = new Date(document.getElementById('exportDateEnd').value);
+            } else {
+                startDate = new Date(0);
+                endDate = new Date();
+            }
+            
+            // Filter events
+            const filteredEvents = events.filter(e => {
+                const eventDate = new Date(e.data);
+                return eventDate >= startDate && eventDate <= endDate;
+            }).sort((a, b) => new Date(a.data) - new Date(b.data));
+            
+            if (filteredEvents.length === 0) {
+                alert('Nessun evento nel periodo selezionato!');
+                return;
+            }
+            
+            // Header
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('Report Turni VVF', 14, 20);
+            
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            const periodText = period === 'custom' || period === 'month' ? 
+                `${startDate.toLocaleDateString('it-IT')} - ${endDate.toLocaleDateString('it-IT')}` :
+                period === 'year' ? `Anno ${today.getFullYear()}` : 'Tutti gli eventi';
+            doc.text(`Periodo: ${periodText}`, 14, 28);
+            doc.text(`Generato il: ${new Date().toLocaleDateString('it-IT')}`, 14, 34);
+            
+            // Summary
+            const totalOre = filteredEvents.reduce((sum, e) => sum + (e.ore || 0), 0);
+            const totalCompenso = filteredEvents.reduce((sum, e) => sum + (e.compenso || 0), 0);
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Riepilogo', 14, 45);
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10);
+            doc.text(`Totale Ore: ${totalOre.toFixed(2)}h`, 14, 52);
+            doc.text(`Totale Compenso: €${totalCompenso.toFixed(2)}`, 14, 58);
+            doc.text(`Numero Eventi: ${filteredEvents.length}`, 14, 64);
+            
+            // Table
+            const tableData = filteredEvents.map(event => [
+                new Date(event.data).toLocaleDateString('it-IT'),
+                event.tipo,
+                event.oraInizio && event.oraFine ? `${event.oraInizio}-${event.oraFine}` : '-',
+                (event.ore || 0).toFixed(2) + 'h',
+                '€' + (event.compenso || 0).toFixed(2),
+                event.note || '-'
+            ]);
+            
+            doc.autoTable({
+                startY: 72,
+                head: [['Data', 'Tipo', 'Orario', 'Ore', 'Compenso', 'Note']],
+                body: tableData,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [220, 20, 60], textColor: 255, fontStyle: 'bold' },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 20 },
+                    4: { cellWidth: 25 },
+                    5: { cellWidth: 'auto' }
+                }
+            });
+            
+            // Footer on last page
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text(`Pagina ${i} di ${pageCount}`, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+            }
+            
+            // Save
+            const filename = `turni-vvf-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+            
+            closeExportModal();
+        }
+        
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('Service Worker registrato con successo:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Registrazione Service Worker fallita:', error);
+                    });
+            });
+        }
+        
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallButton();
+        });
+        
+        function showInstallButton() {
+            // Show install button in header if not already installed
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                const installBtn = document.createElement('button');
+                installBtn.className = 'btn btn-secondary';
+                installBtn.innerHTML = '📱 Installa App';
+                installBtn.onclick = installApp;
+                
+                const headerActions = document.querySelector('.header-actions');
+                if (headerActions && !document.getElementById('installBtn')) {
+                    installBtn.id = 'installBtn';
+                    headerActions.insertBefore(installBtn, headerActions.firstChild);
+                }
+            }
+        }
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('App installata');
+                        const installBtn = document.getElementById('installBtn');
+                        if (installBtn) installBtn.remove();
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

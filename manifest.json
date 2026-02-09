@@ -1,0 +1,25 @@
+{
+  "name": "Turni VVF - Gestione Completa",
+  "short_name": "Turni VVF",
+  "description": "Gestione completa turni e straordinari per Vigili del Fuoco",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0F0F1E",
+  "theme_color": "#DC143C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}
