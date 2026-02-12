@@ -4,6 +4,7 @@
   "description": "Gestione completa turni e straordinari per Vigili del Fuoco con calcolo compensi, ferie, permessi e export PDF",
   "lang": "it-IT",
   "start_url": "/Turni-App-VVF/",
+  "id": "/Turni-App-VVF/",
   "scope": "/Turni-App-VVF/",
   "display": "standalone",
   "background_color": "#0F0F1E",
@@ -66,7 +67,14 @@
     }
   ],
   "categories": ["productivity", "utilities", "business"],
-  "screenshots": [],
+  "screenshots": [
+  {
+    "src": "icons/screenshot1.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "form_factor": "narrow"
+  }
+],
   "shortcuts": [
     {
       "name": "Nuovo Evento",
