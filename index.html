@@ -790,14 +790,13 @@
                         <option value="">Seleziona...</option>
                         <option value="Straordinario Soccorso">Straordinario Soccorso</option>
                         <option value="Straordinario Convenzione">Straordinario Convenzione/Programmato</option>
-                        <option value="Vigilanza Diurno">Vigilanza Diurno</option>
-                        <option value="Vigilanza Notturno">Vigilanza Notturno</option>
+                        <option value="Straordinario Notturno">Straordinario Notturno</option>
+                        <option value="Vigilanza">Vigilanza</option>
                         <option value="Missione Soccorso">Missione Soccorso</option>
                         <option value="Missione Ordinario">Missione Ordinario</option>
                         <option value="Missione Sostituzione">Missione Sostituzione</option>
                         <option value="Buono Pasto">Buono Pasto</option>
                         <option value="Mancato Pasto">Mancato Pasto</option>
-                        <option value="Rimborso Pasto">Rimborso Pasto</option>
                         <option value="Ore Guida">Ore Guida</option>
                         <option value="Ore Recupero Fatte">Ore Recupero Fatte</option>
                         <option value="Ore Recupero Sottratte">Ore Recupero Sottratte</option>
@@ -954,12 +953,16 @@
                         <input type="number" class="form-control" id="tariffaStraordinarioConvenzione" step="0.01" min="0" placeholder="es: 13.80">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Vigilanza Diurno (€/ora)</label>
+                        <label class="form-label">Straordinario Notturno (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffaStraordinarioNotturno" step="0.01" min="0" placeholder="es: 13.80">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vigilanza Diurno (€/ora) <small style="color:var(--text-light)">(06:01–21:59)</small></label>
                         <input type="number" class="form-control" id="tariffaVigilanzaDiurno" step="0.01" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Vigilanza Notturno (€/ora)</label>
-                        <input type="number" class="form-control" id="tariffaVigilanziNotturno" step="0.01" min="0">
+                        <label class="form-label">Vigilanza Notturno (€/ora) <small style="color:var(--text-light)">(22:00–06:00)</small></label>
+                        <input type="number" class="form-control" id="tariffaVigilanzaNotturno" step="0.01" min="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Missione (€/ora)</label>
@@ -976,10 +979,6 @@
                     <div class="form-group">
                         <label class="form-label">Mancato Pasto (€ fisso)</label>
                         <input type="number" class="form-control" id="tariffaMancatoPasto" step="0.01" min="0" placeholder="es: 32.00">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Rimborso Pasto (€ fisso)</label>
-                        <input type="number" class="form-control" id="tariffaRimborsoPasto" step="0.01" min="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">CS/Autista/SAPR/TAS (€/ora)</label>
@@ -1132,6 +1131,7 @@
             tariffe: {
                 'Straordinario Soccorso': 13.8,
                 'Straordinario Convenzione': 13.8,
+                'Straordinario Notturno': 13.8,
                 'Vigilanza Diurno': 0,
                 'Vigilanza Notturno': 0,
                 'Missione Soccorso': 0,
@@ -1140,7 +1140,6 @@
                 'Ore Guida': 13.8,
                 'Buono Pasto': 7.0,
                 'Mancato Pasto': 32.0,
-                'Rimborso Pasto': 0,
                 'CS': 0,
                 'Autista': 0,
                 'SAPR': 0,
@@ -1327,12 +1326,9 @@
                     if (event.tipo.includes('Straordinario')) {
                         badge.classList.add('event-straordinario');
                         badgeText = 'STR';
-                    } else if (event.tipo.includes('Vigilanza Diurno')) {
+                    } else if (event.tipo === 'Vigilanza') {
                         badge.classList.add('event-vigilanza-d');
-                        badgeText = 'VIG D';
-                    } else if (event.tipo.includes('Vigilanza Notturno')) {
-                        badge.classList.add('event-vigilanza-n');
-                        badgeText = 'VIG N';
+                        badgeText = 'VIG';
                     } else if (event.tipo === 'Ferie') {
                         badge.classList.add('event-ferie');
                         badgeText = 'FERIE';
@@ -1401,8 +1397,12 @@
                     const statusClass = event.pagato ? 'pagato' : (event.inviato ? 'inviato' : '');
                     
                     // Format ore in HH:mm for L104 and H18
+                    const isQualifica = ['CS', 'Autista', 'CS Autista', 'Responsabile SO', 'Sala Operativa',
+                        'Prima', 'Seconda', '1 Appoggio', '2 Appoggio', 'SAPR', 'TAS'].includes(event.tipo);
                     let oreDisplay = '';
-                    if (event.ore) {
+                    if (isQualifica) {
+                        oreDisplay = `${event.quantita || 1} turno${(event.quantita || 1) > 1 ? 'i' : ''}`;
+                    } else if (event.ore) {
                         if (event.tipo === 'L104' || event.tipo === 'H18') {
                             const ore = Math.floor(event.ore);
                             const minuti = Math.round((event.ore - ore) * 60);
@@ -1416,6 +1416,11 @@
                     let timeDisplay = '';
                     if (event.oraInizio && event.oraFine) {
                         timeDisplay = `${event.oraInizio} - ${event.oraFine}`;
+                        // Mostra split diurno/notturno per Vigilanza e Straordinari
+                        if ((event.tipo === 'Vigilanza' || event.tipo.includes('Straordinario')) &&
+                            (event.oreDiurne > 0 || event.oreNotturne > 0)) {
+                            timeDisplay += ` <small style="color:var(--text-light)">(☀️ ${event.oreDiurne.toFixed(2)}h diurno / 🌙 ${event.oreNotturne.toFixed(2)}h notturno)</small>`;
+                        }
                     } else if (event.quantita) {
                         if (event.tipo === 'L104' || event.tipo === 'H18') {
                             const ore = Math.floor(event.quantita);
@@ -1610,13 +1615,13 @@
                 document.getElementById('l104h18Ore').value = 0;
                 document.getElementById('l104h18Minuti').value = 0;
             }
-            // Voci con selezione turno automatico (CS, Autista, SAPR, TAS, etc)
+            // Voci con selezione turno automatico (CS, Autista, SAPR, TAS, etc) - solo conteggio
             else if (tipo === 'CS' || tipo === 'Autista' || tipo === 'CS Autista' || 
                      tipo === 'Responsabile SO' || tipo === 'Sala Operativa' ||
                      tipo === 'Prima' || tipo === 'Seconda' || 
                      tipo === '1 Appoggio' || tipo === '2 Appoggio' ||
                      tipo === 'SAPR' || tipo === 'TAS') {
-                turnoTypeField.style.display = 'block';
+                // Nessun campo aggiuntivo - registra solo la presenza (conteggio 1)
             }
             // Ferie - solo quantità giorni
             else if (tipo === 'Ferie') {
@@ -1624,7 +1629,7 @@
                 document.getElementById('quantita').value = 1;
             }
             // Buono Pasto, Mancato Pasto - quantità
-            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Rimborso Pasto') {
+            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto') {
                 quantitaField.style.display = 'block';
                 document.getElementById('quantita').value = 1;
             }
@@ -1632,6 +1637,36 @@
             else if (tipo) {
                 timeFields.style.display = 'grid';
             }
+        }
+
+        /**
+         * Calcola le ore diurne e notturne dato un intervallo orario.
+         * Notturno: 22:00–06:00 | Diurno: 06:01–21:59
+         * Gestisce gli intervalli che attraversano la mezzanotte.
+         * Restituisce { oreDiurne, oreNotturne }
+         */
+        function calcolaOreDiurnoNotturno(oraInizio, oraFine) {
+            const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+            let start = toMin(oraInizio);
+            let end = toMin(oraFine);
+            if (end <= start) end += 24 * 60; // attraversa mezzanotte
+
+            // Fascia notturna: 0–360 min (00:00–06:00) e 1320–1440 min (22:00–24:00)
+            // Lavoriamo su un arco di 24h e contiamo i minuti in fascia notturna
+            let minutiNotturni = 0;
+            for (let m = start; m < end; m++) {
+                const minOfDay = m % (24 * 60);
+                // notturno: 0–359 (00:00–05:59) oppure 1320–1439 (22:00–23:59)
+                if (minOfDay < 360 || minOfDay >= 1320) {
+                    minutiNotturni++;
+                }
+            }
+            const totalMin = end - start;
+            const minutiDiurni = totalMin - minutiNotturni;
+            return {
+                oreDiurne: minutiDiurni / 60,
+                oreNotturne: minutiNotturni / 60
+            };
         }
 
         function saveEvent(e) {
@@ -1647,112 +1682,106 @@
             
             let ore = 0;
             let compenso = 0;
+            // Ore diurne/notturne per split automatico
+            let oreDiurne = 0;
+            let oreNotturne = 0;
             
+            const isQualifica = ['CS', 'Autista', 'CS Autista', 'Responsabile SO', 'Sala Operativa',
+                'Prima', 'Seconda', '1 Appoggio', '2 Appoggio', 'SAPR', 'TAS'].includes(tipo);
+
             // L104 e H18 - calcola ore da ore e minuti
             if (tipo === 'L104' || tipo === 'H18') {
                 const oreInput = parseInt(document.getElementById('l104h18Ore').value) || 0;
                 const minutiInput = parseInt(document.getElementById('l104h18Minuti').value) || 0;
                 ore = oreInput + (minutiInput / 60);
             }
-            // Voci con turno automatico
-            else if (tipo === 'CS' || tipo === 'Autista' || tipo === 'CS Autista' || 
-                     tipo === 'Responsabile SO' || tipo === 'Sala Operativa' ||
-                     tipo === 'Prima' || tipo === 'Seconda' || 
-                     tipo === '1 Appoggio' || tipo === '2 Appoggio' ||
-                     tipo === 'SAPR' || tipo === 'TAS') {
-                const turnoType = document.getElementById('turnoType').value;
-                
-                if (turnoType === 'intero') {
-                    oraInizio = '08:00';
-                    oraFine = '08:00'; // 24 ore
-                    ore = 24;
-                } else if (turnoType === 'diurno') {
-                    oraInizio = '08:00';
-                    oraFine = '20:00';
-                    ore = 12;
-                } else if (turnoType === 'notturno') {
-                    oraInizio = '20:00';
-                    oraFine = '08:00';
-                    ore = 12;
-                }
+            // Qualifiche - solo conteggio numerico
+            else if (isQualifica) {
+                ore = 0;
+                compenso = 0;
             }
             // Ferie - quantità giorni
             else if (tipo === 'Ferie') {
                 ore = quantita;
             }
             // Pasti - quantità
-            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Rimborso Pasto') {
+            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto') {
                 ore = quantita;
             }
-            // Calcolo ore normale da orari
+            // Calcolo ore normale da orari + split diurno/notturno
             else if (oraInizio && oraFine) {
                 const [h1, m1] = oraInizio.split(':').map(Number);
                 const [h2, m2] = oraFine.split(':').map(Number);
                 ore = ((h2 * 60 + m2) - (h1 * 60 + m1)) / 60;
                 if (ore < 0) ore += 24;
+                
+                // Per Vigilanza e Straordinari calcola split diurno/notturno
+                if (tipo === 'Vigilanza' || tipo.includes('Straordinario')) {
+                    const split = calcolaOreDiurnoNotturno(oraInizio, oraFine);
+                    oreDiurne = split.oreDiurne;
+                    oreNotturne = split.oreNotturne;
+                }
             }
             
-            // Calculate compensation
-            const tariffaKey = getTariffaKey(tipo);
-            if (tariffaKey && settings.tariffe[tariffaKey]) {
-                if (ore > 0) {
-                    compenso = ore * settings.tariffe[tariffaKey];
-                } else {
-                    compenso = settings.tariffe[tariffaKey] * quantita;
+            // Calcolo compenso con split diurno/notturno
+            if (tipo === 'Vigilanza' && oraInizio && oraFine) {
+                const tarD = settings.tariffe['Vigilanza Diurno'] || 0;
+                const tarN = settings.tariffe['Vigilanza Notturno'] || 0;
+                compenso = (oreDiurne * tarD) + (oreNotturne * tarN);
+            } else if (tipo.includes('Straordinario') && oraInizio && oraFine) {
+                // Per straordinari: quota notturna usa tariffa Straordinario Notturno
+                const tarBase = settings.tariffe[getTariffaKey(tipo)] || 0;
+                const tarNott = settings.tariffe['Straordinario Notturno'] || tarBase;
+                compenso = (oreDiurne * tarBase) + (oreNotturne * tarNott);
+            } else if (!isQualifica) {
+                const tariffaKey = getTariffaKey(tipo);
+                if (tariffaKey && settings.tariffe[tariffaKey]) {
+                    if (ore > 0) {
+                        compenso = ore * settings.tariffe[tariffaKey];
+                    } else {
+                        compenso = settings.tariffe[tariffaKey] * quantita;
+                    }
                 }
             }
             
             // Handle PDF file
             const file = pdfFileInput.files[0];
             if (file) {
-                // Check file size (max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
                     alert('Il file PDF è troppo grande. Massimo 5MB consentiti.');
                     return;
                 }
-                
-                // Check file type
                 if (file.type !== 'application/pdf') {
                     alert('Solo file PDF sono consentiti.');
                     return;
                 }
-                
-                // Read file as base64
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const pdfData = event.target.result;
-                    
                     const newEvent = {
-                        id: Date.now(),
-                        tipo,
-                        data,
-                        oraInizio,
-                        oraFine,
-                        quantita: tipo === 'L104' || tipo === 'H18' ? ore : quantita,
-                        ore: ore > 0 ? ore : quantita,
-                        compenso,
-                        note,
-                        pdf: pdfData,
-                        pdfName: file.name
+                        id: Date.now(), tipo, data,
+                        oraInizio: isQualifica ? null : oraInizio,
+                        oraFine: isQualifica ? null : oraFine,
+                        quantita: isQualifica ? 1 : (tipo === 'L104' || tipo === 'H18' ? ore : quantita),
+                        ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
+                        oreDiurne, oreNotturne,
+                        compenso: isQualifica ? 0 : compenso,
+                        note, pdf: pdfData, pdfName: file.name
                     };
-                    
                     saveEventToStorage(newEvent);
                 };
                 reader.readAsDataURL(file);
             } else {
-                // No PDF attached
                 const newEvent = {
-                    id: Date.now(),
-                    tipo,
-                    data,
-                    oraInizio,
-                    oraFine,
-                    quantita: tipo === 'L104' || tipo === 'H18' ? ore : quantita,
-                    ore: ore > 0 ? ore : quantita,
-                    compenso,
+                    id: Date.now(), tipo, data,
+                    oraInizio: isQualifica ? null : oraInizio,
+                    oraFine: isQualifica ? null : oraFine,
+                    quantita: isQualifica ? 1 : (tipo === 'L104' || tipo === 'H18' ? ore : quantita),
+                    ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
+                    oreDiurne, oreNotturne,
+                    compenso: isQualifica ? 0 : compenso,
                     note
                 };
-                
                 saveEventToStorage(newEvent);
             }
         }
@@ -1803,30 +1832,28 @@
         }
 
         function getTariffaKey(tipo) {
-            // Map event types to tariff keys
             const mapping = {
                 'Straordinario Soccorso': 'Straordinario Soccorso',
                 'Straordinario Convenzione': 'Straordinario Convenzione',
-                'Vigilanza Diurno': 'Vigilanza Diurno',
-                'Vigilanza Notturno': 'Vigilanza Notturno',
+                'Straordinario Notturno': 'Straordinario Notturno',
+                'Vigilanza': null, // compenso calcolato direttamente con split diurno/notturno
                 'Missione Soccorso': 'Missione Soccorso',
                 'Missione Ordinario': 'Missione Ordinario',
                 'Missione Sostituzione': 'Missione Sostituzione',
                 'Ore Guida': 'Ore Guida',
                 'Buono Pasto': 'Buono Pasto',
                 'Mancato Pasto': 'Mancato Pasto',
-                'Rimborso Pasto': 'Rimborso Pasto',
                 'CS': 'CS',
                 'Autista': 'Autista',
                 'CS Autista': 'CS',
                 'SAPR': 'SAPR',
                 'TAS': 'TAS',
-                'Responsabile SO': 'CS',
-                'Sala Operativa': 'CS',
-                'Prima': 'CS',
-                'Seconda': 'CS',
-                '1 Appoggio': 'CS',
-                '2 Appoggio': 'CS'
+                'Responsabile SO': null,
+                'Sala Operativa': null,
+                'Prima': null,
+                'Seconda': null,
+                '1 Appoggio': null,
+                '2 Appoggio': null
             };
             return mapping[tipo];
         }
@@ -1837,6 +1864,7 @@
                 settings.tariffe = {
                     'Straordinario Soccorso': 13.8,
                     'Straordinario Convenzione': 13.8,
+                    'Straordinario Notturno': 13.8,
                     'Vigilanza Diurno': 0,
                     'Vigilanza Notturno': 0,
                     'Missione Soccorso': 0,
@@ -1845,7 +1873,6 @@
                     'Ore Guida': 13.8,
                     'Buono Pasto': 7.0,
                     'Mancato Pasto': 32.0,
-                    'Rimborso Pasto': 0,
                     'CS': 0,
                     'Autista': 0,
                     'SAPR': 0,
@@ -1862,13 +1889,13 @@
             // Load tariffe
             document.getElementById('tariffaStraordinarioSoccorso').value = settings.tariffe['Straordinario Soccorso'] || '';
             document.getElementById('tariffaStraordinarioConvenzione').value = settings.tariffe['Straordinario Convenzione'] || '';
+            document.getElementById('tariffaStraordinarioNotturno').value = settings.tariffe['Straordinario Notturno'] || '';
             document.getElementById('tariffaVigilanzaDiurno').value = settings.tariffe['Vigilanza Diurno'] || '';
-            document.getElementById('tariffaVigilanziNotturno').value = settings.tariffe['Vigilanza Notturno'] || '';
+            document.getElementById('tariffaVigilanzaNotturno').value = settings.tariffe['Vigilanza Notturno'] || '';
             document.getElementById('tariffaMissione').value = settings.tariffe['Missione Soccorso'] || '';
             document.getElementById('tariffaOreGuida').value = settings.tariffe['Ore Guida'] || '';
             document.getElementById('tariffaBuonoPasto').value = settings.tariffe['Buono Pasto'] || '';
             document.getElementById('tariffaMancatoPasto').value = settings.tariffe['Mancato Pasto'] || '';
-            document.getElementById('tariffaRimborsoPasto').value = settings.tariffe['Rimborso Pasto'] || '';
             document.getElementById('tariffaQualifiche').value = settings.tariffe['CS'] || '';
             
             // Load cloud settings
@@ -1911,15 +1938,15 @@
         function salvaImpostazioniTariffe() {
             settings.tariffe['Straordinario Soccorso'] = parseFloat(document.getElementById('tariffaStraordinarioSoccorso').value) || 0;
             settings.tariffe['Straordinario Convenzione'] = parseFloat(document.getElementById('tariffaStraordinarioConvenzione').value) || 0;
+            settings.tariffe['Straordinario Notturno'] = parseFloat(document.getElementById('tariffaStraordinarioNotturno').value) || 0;
             settings.tariffe['Vigilanza Diurno'] = parseFloat(document.getElementById('tariffaVigilanzaDiurno').value) || 0;
-            settings.tariffe['Vigilanza Notturno'] = parseFloat(document.getElementById('tariffaVigilanziNotturno').value) || 0;
+            settings.tariffe['Vigilanza Notturno'] = parseFloat(document.getElementById('tariffaVigilanzaNotturno').value) || 0;
             settings.tariffe['Missione Soccorso'] = parseFloat(document.getElementById('tariffaMissione').value) || 0;
             settings.tariffe['Missione Ordinario'] = parseFloat(document.getElementById('tariffaMissione').value) || 0;
             settings.tariffe['Missione Sostituzione'] = parseFloat(document.getElementById('tariffaMissione').value) || 0;
             settings.tariffe['Ore Guida'] = parseFloat(document.getElementById('tariffaOreGuida').value) || 0;
             settings.tariffe['Buono Pasto'] = parseFloat(document.getElementById('tariffaBuonoPasto').value) || 0;
             settings.tariffe['Mancato Pasto'] = parseFloat(document.getElementById('tariffaMancatoPasto').value) || 0;
-            settings.tariffe['Rimborso Pasto'] = parseFloat(document.getElementById('tariffaRimborsoPasto').value) || 0;
             const tariffaQualifiche = parseFloat(document.getElementById('tariffaQualifiche').value) || 0;
             settings.tariffe['CS'] = tariffaQualifiche;
             settings.tariffe['Autista'] = tariffaQualifiche;
@@ -2104,29 +2131,37 @@
             doc.text(`Numero Eventi: ${filteredEvents.length}`, 14, 64);
             
             // Table
-            const tableData = filteredEvents.map(event => [
-                new Date(event.data).toLocaleDateString('it-IT'),
-                event.tipo,
-                event.oraInizio && event.oraFine ? `${event.oraInizio}-${event.oraFine}` : '-',
-                (event.ore || 0).toFixed(2) + 'h',
-                '€' + (event.compenso || 0).toFixed(2),
-                event.note || '-'
-            ]);
+            const tableData = filteredEvents.map(event => {
+                const splitInfo = (event.tipo === 'Vigilanza' || event.tipo.includes('Straordinario')) && 
+                    (event.oreDiurne > 0 || event.oreNotturne > 0)
+                    ? `D:${event.oreDiurne.toFixed(1)}h N:${event.oreNotturne.toFixed(1)}h`
+                    : '-';
+                return [
+                    new Date(event.data).toLocaleDateString('it-IT'),
+                    event.tipo,
+                    event.oraInizio && event.oraFine ? `${event.oraInizio}-${event.oraFine}` : '-',
+                    (event.ore || 0).toFixed(2) + 'h',
+                    splitInfo,
+                    '€' + (event.compenso || 0).toFixed(2),
+                    event.note || '-'
+                ];
+            });
             
             doc.autoTable({
                 startY: 72,
-                head: [['Data', 'Tipo', 'Orario', 'Ore', 'Compenso', 'Note']],
+                head: [['Data', 'Tipo', 'Orario', 'Ore Tot.', 'D/N Split', 'Compenso', 'Note']],
                 body: tableData,
                 theme: 'grid',
                 styles: { fontSize: 8, cellPadding: 2 },
                 headStyles: { fillColor: [220, 20, 60], textColor: 255, fontStyle: 'bold' },
                 columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 40 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 20 },
-                    4: { cellWidth: 25 },
-                    5: { cellWidth: 'auto' }
+                    0: { cellWidth: 22 },
+                    1: { cellWidth: 35 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 16 },
+                    4: { cellWidth: 22 },
+                    5: { cellWidth: 20 },
+                    6: { cellWidth: 'auto' }
                 }
             });
             
