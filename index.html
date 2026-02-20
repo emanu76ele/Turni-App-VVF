@@ -69,6 +69,68 @@
             padding: 20px;
         }
 
+        /* Notification styles */
+        .notification-section {
+            background: #F0F9FF;
+            border: 1px solid #BAE6FD;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 4px;
+        }
+        .notification-section .notif-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0369A1;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notif-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .notif-row:last-child { margin-bottom: 0; }
+        .notif-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 90px;
+        }
+        .notif-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .notif-select {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+        .notif-select:disabled {
+            opacity: 0.4;
+            background: #F3F4F6;
+        }
+        .notif-perm-btn {
+            font-size: 12px;
+            padding: 4px 10px;
+            background: #0EA5E9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
         /* Header */
         header {
             background: var(--card);
@@ -812,8 +874,6 @@
                         <option value="Seconda">Seconda</option>
                         <option value="1 Appoggio">1 Appoggio</option>
                         <option value="2 Appoggio">2 Appoggio</option>
-                        <option value="SAPR">SAPR</option>
-                        <option value="TAS">TAS</option>
                     </select>
                 </div>
 
@@ -871,6 +931,50 @@
                     <small style="color: var(--text-light); font-size: 12px;">Carica un PDF relativo a questo evento (max 5MB)</small>
                 </div>
 
+                <!-- NOTIFICHE PUSH -->
+                <div class="form-group">
+                    <label class="form-label">🔔 Notifiche Push</label>
+                    <div class="notification-section">
+                        <div class="notif-title">
+                            <span>Imposta avvisi per questo evento</span>
+                            <button type="button" class="notif-perm-btn" onclick="richiediPermessoNotifiche()" id="notifPermBtn" style="display:none">Attiva notifiche</button>
+                        </div>
+                        <div class="notif-row">
+                            <label class="notif-toggle">
+                                <input type="checkbox" id="notif1Enabled" onchange="toggleNotifSelect(1)">
+                                <span>Avviso 1</span>
+                            </label>
+                            <select class="notif-select" id="notif1Time" disabled>
+                                <option value="15">15 minuti prima</option>
+                                <option value="30">30 minuti prima</option>
+                                <option value="60" selected>1 ora prima</option>
+                                <option value="120">2 ore prima</option>
+                                <option value="360">6 ore prima</option>
+                                <option value="720">12 ore prima</option>
+                                <option value="1440">1 giorno prima</option>
+                                <option value="2880">2 giorni prima</option>
+                            </select>
+                        </div>
+                        <div class="notif-row">
+                            <label class="notif-toggle">
+                                <input type="checkbox" id="notif2Enabled" onchange="toggleNotifSelect(2)">
+                                <span>Avviso 2</span>
+                            </label>
+                            <select class="notif-select" id="notif2Time" disabled>
+                                <option value="15">15 minuti prima</option>
+                                <option value="30">30 minuti prima</option>
+                                <option value="60">1 ora prima</option>
+                                <option value="120" selected>2 ore prima</option>
+                                <option value="360">6 ore prima</option>
+                                <option value="720">12 ore prima</option>
+                                <option value="1440">1 giorno prima</option>
+                                <option value="2880">2 giorni prima</option>
+                            </select>
+                        </div>
+                        <div style="font-size:11px;color:#64748B;margin-top:6px;">⚠️ Le notifiche funzionano solo con l'app aperta o in background sul dispositivo.</div>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
                     💾 Salva Evento
                 </button>
@@ -898,14 +1002,27 @@
             <div id="turno-tab" class="tab-content active">
                 <div class="form-group">
                     <label class="form-label">Il Mio Turno</label>
-                    <select class="form-control" id="mioTurno">
+                    <select class="form-control" id="mioTurno" onchange="updateTurnoUI()">
                         <option value="">Seleziona turno...</option>
                         <option value="A">Turno A</option>
                         <option value="B">Turno B</option>
                         <option value="C">Turno C</option>
                         <option value="D">Turno D</option>
+                        <option value="24/72">Turno 24/72</option>
                     </select>
                     <small style="color: var(--text-light); font-size: 12px;">Il tuo turno verrà evidenziato nel calendario</small>
+                </div>
+
+                <!-- Campo squadra 24/72 (visibile solo se selezionato 24/72) -->
+                <div class="form-group" id="squadra2472Field" style="display:none;">
+                    <label class="form-label">Squadra 24/72</label>
+                    <select class="form-control" id="mioSquadra2472">
+                        <option value="A/D">A/D (Diurno A / Notturno D)</option>
+                        <option value="B/A">B/A (Diurno B / Notturno A)</option>
+                        <option value="C/B">C/B (Diurno C / Notturno B)</option>
+                        <option value="D/C">D/C (Diurno D / Notturno C)</option>
+                    </select>
+                    <small style="color: var(--text-light); font-size: 12px;">Orario servizio: 08:00 → 08:00 (+1g) · Riposo: 72h</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Il Mio Salto</label>
@@ -1154,6 +1271,7 @@
             renderCalendar();
             updateCounters();
             loadSettings();
+            riprogrammaNotificheAlAvvio();
         });
 
         // Funzione per calcolare i turni
@@ -1205,6 +1323,19 @@
                 day: dayShiftLetter + dayJump,
                 night: nightShiftLetter + nightJump
             };
+        }
+
+        // Calcola quale squadra 24/72 è in servizio in un dato giorno
+        // Riferimento: 20/02/2026 → squadra D/C in servizio dalle 08:00
+        function get2472ShiftForDate(date) {
+            const baseDate = new Date(2026, 1, 20, 12, 0, 0); // 20/02/2026 = D/C
+            const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+            const diffTime = inputDate - baseDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            // Rotazione: D/C, A/D, B/A, C/B (ogni 4 giorni)
+            const squads = ['D/C', 'A/D', 'B/A', 'C/B'];
+            const idx = ((diffDays % 4) + 4) % 4;
+            return squads[idx];
         }
 
         function renderCalendar() {
@@ -1273,26 +1404,48 @@
             
             // Add shifts - use the date object directly for calculation
             const shifts = getShiftForDate(date);
+            const shift2472 = get2472ShiftForDate(date);
             
             // Check if this is user's shift
             if (settings.mioTurno) {
-                const userShift = settings.mioTurno + settings.mioSalto;
-                const dayShiftLetter = shifts.day.charAt(0); // Get letter (A, B, C, D)
-                const nightShiftLetter = shifts.night.charAt(0);
-                
-                // Green: any shift with user's letter (e.g., all A shifts: A1, A2, A3...)
-                const isMyShiftLetter = dayShiftLetter === settings.mioTurno || nightShiftLetter === settings.mioTurno;
-                
-                // Purple: exactly user's shift+jump (e.g., A3 only)
-                const isExactMyShift = shifts.day === userShift || shifts.night === userShift;
-                
-                if (!otherMonth) {
-                    if (isExactMyShift) {
-                        // Purple for exact match (A3)
-                        div.classList.add('my-shift-day');
-                    } else if (isMyShiftLetter) {
-                        // Green for any shift with user's letter (A1, A2, A4...)
-                        div.classList.add('my-shift');
+                if (settings.mioTurno === '24/72') {
+                    // 24/72 mode: highlight days when the user's squad is on duty
+                    const userSquadra = settings.mioSquadra2472 || 'D/C';
+                    if (!otherMonth && shift2472 === userSquadra) {
+                        if (settings.mioSalto) {
+                            // Exact salto match: purple (salto is sequential count)
+                            // Since 24/72 repeats every 4 days, we determine the salto number
+                            // by counting which occurrence this is (modulo 8)
+                            const baseDate2472 = new Date(2026, 1, 20, 12, 0, 0);
+                            const inputDate2 = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+                            const diffTime2 = inputDate2 - baseDate2472;
+                            const diffDays2 = Math.floor(diffTime2 / (1000 * 60 * 60 * 24));
+                            // Calculate which occurrence of the squad's shift this is
+                            const squadIdx = ['D/C', 'A/D', 'B/A', 'C/B'].indexOf(userSquadra);
+                            const daysFromSquadStart = diffDays2 - squadIdx;
+                            const shiftNum = ((Math.floor(daysFromSquadStart / 4) % 8) + 8) % 8 + 1;
+                            if (String(shiftNum) === String(settings.mioSalto)) {
+                                div.classList.add('my-shift-day');
+                            } else {
+                                div.classList.add('my-shift');
+                            }
+                        } else {
+                            div.classList.add('my-shift');
+                        }
+                    }
+                } else {
+                    const userShift = settings.mioTurno + settings.mioSalto;
+                    const dayShiftLetter = shifts.day.charAt(0);
+                    const nightShiftLetter = shifts.night.charAt(0);
+                    const isMyShiftLetter = dayShiftLetter === settings.mioTurno || nightShiftLetter === settings.mioTurno;
+                    const isExactMyShift = shifts.day === userShift || shifts.night === userShift;
+                    
+                    if (!otherMonth) {
+                        if (isExactMyShift) {
+                            div.classList.add('my-shift-day');
+                        } else if (isMyShiftLetter) {
+                            div.classList.add('my-shift');
+                        }
                     }
                 }
             }
@@ -1307,6 +1460,10 @@
                 <div class="shift-row">
                     <span class="shift-label">N</span>
                     <span class="shift-value">${shifts.night}</span>
+                </div>
+                <div class="shift-row">
+                    <span class="shift-label" style="font-size:9px;color:#7C3AED;">24h</span>
+                    <span class="shift-value" style="font-size:9px;color:#7C3AED;">${shift2472}</span>
                 </div>
             `;
             div.appendChild(shiftsContainer);
@@ -1585,6 +1742,13 @@
             } else {
                 document.getElementById('dataEvento').value = new Date().toISOString().split('T')[0];
             }
+            // Mostra pulsante permesso notifiche se non ancora concesso
+            const permBtn = document.getElementById('notifPermBtn');
+            if ('Notification' in window && Notification.permission === 'default') {
+                permBtn.style.display = 'inline-block';
+            } else {
+                permBtn.style.display = 'none';
+            }
         }
 
         function closeModal() {
@@ -1680,6 +1844,15 @@
             const note = document.getElementById('noteEvento').value;
             const pdfFileInput = document.getElementById('pdfFile');
             
+            // Raccoglie impostazioni notifiche
+            const notifiche = [];
+            if (document.getElementById('notif1Enabled').checked) {
+                notifiche.push({ minutiPrima: parseInt(document.getElementById('notif1Time').value) });
+            }
+            if (document.getElementById('notif2Enabled').checked) {
+                notifiche.push({ minutiPrima: parseInt(document.getElementById('notif2Time').value) });
+            }
+            
             let ore = 0;
             let compenso = 0;
             // Ore diurne/notturne per split automatico
@@ -1766,7 +1939,7 @@
                         ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
                         oreDiurne, oreNotturne,
                         compenso: isQualifica ? 0 : compenso,
-                        note, pdf: pdfData, pdfName: file.name
+                        note, pdf: pdfData, pdfName: file.name, notifiche
                     };
                     saveEventToStorage(newEvent);
                 };
@@ -1780,7 +1953,7 @@
                     ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
                     oreDiurne, oreNotturne,
                     compenso: isQualifica ? 0 : compenso,
-                    note
+                    note, notifiche
                 };
                 saveEventToStorage(newEvent);
             }
@@ -1793,6 +1966,11 @@
             
             events.push(event);
             localStorage.setItem('vvfEvents', JSON.stringify(events));
+            
+            // Programma notifiche push
+            if (event.notifiche && event.notifiche.length > 0) {
+                programmaNotifiche(event);
+            }
             
             closeModal();
             renderCalendar();
@@ -1882,6 +2060,10 @@
             
             document.getElementById('mioTurno').value = settings.mioTurno || '';
             document.getElementById('mioSalto').value = settings.mioSalto || '';
+            updateTurnoUI();
+            if (settings.mioSquadra2472) {
+                document.getElementById('mioSquadra2472').value = settings.mioSquadra2472;
+            }
             document.getElementById('ferieAnnoCorrente').value = settings.ferieAnnoCorrente;
             document.getElementById('ferieResiduePrecedente').value = settings.ferieResiduePrecedente;
             document.getElementById('oreRecuperoResidue').value = settings.oreRecuperoResidue;
@@ -1930,9 +2112,22 @@
         function salvaImpostazioniTurno() {
             settings.mioTurno = document.getElementById('mioTurno').value;
             settings.mioSalto = document.getElementById('mioSalto').value;
+            if (settings.mioTurno === '24/72') {
+                settings.mioSquadra2472 = document.getElementById('mioSquadra2472').value;
+            }
             localStorage.setItem('vvfSettings', JSON.stringify(settings));
             renderCalendar();
             alert('Impostazioni turno salvate!');
+        }
+
+        function updateTurnoUI() {
+            const turno = document.getElementById('mioTurno').value;
+            const squadraField = document.getElementById('squadra2472Field');
+            if (turno === '24/72') {
+                squadraField.style.display = 'block';
+            } else {
+                squadraField.style.display = 'none';
+            }
         }
 
         function salvaImpostazioniTariffe() {
@@ -2179,6 +2374,76 @@
             doc.save(filename);
             
             closeExportModal();
+        }
+
+        // ========== NOTIFICHE PUSH ==========
+        
+        function richiediPermessoNotifiche() {
+            if (!('Notification' in window)) {
+                alert('Questo browser non supporta le notifiche push.');
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    document.getElementById('notifPermBtn').style.display = 'none';
+                    new Notification('🚒 Turni VVF', {
+                        body: 'Notifiche attivate! Riceverai avvisi per i tuoi eventi.',
+                        icon: 'icons/icon-192.png'
+                    });
+                } else {
+                    alert('Permesso notifiche negato. Attivale dalle impostazioni del browser.');
+                }
+            });
+        }
+
+        function toggleNotifSelect(num) {
+            const enabled = document.getElementById(`notif${num}Enabled`).checked;
+            document.getElementById(`notif${num}Time`).disabled = !enabled;
+        }
+
+        function programmaNotifiche(evento) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            
+            // Determina il momento dell'evento
+            const dataEvento = new Date(evento.data + 'T' + (evento.oraInizio || '08:00') + ':00');
+            
+            evento.notifiche.forEach((notif, idx) => {
+                const msAvanti = notif.minutiPrima * 60 * 1000;
+                const tempoNotifica = dataEvento.getTime() - msAvanti;
+                const msAlla = tempoNotifica - Date.now();
+                
+                if (msAlla <= 0) return; // Evento già passato
+                
+                const labelMinuti = notif.minutiPrima < 60 
+                    ? `${notif.minutiPrima} minuti`
+                    : notif.minutiPrima < 1440 
+                        ? `${notif.minutiPrima/60} ${notif.minutiPrima/60 === 1 ? 'ora' : 'ore'}`
+                        : `${notif.minutiPrima/1440} ${notif.minutiPrima/1440 === 1 ? 'giorno' : 'giorni'}`;
+                
+                setTimeout(() => {
+                    if (Notification.permission === 'granted') {
+                        new Notification(`🚒 Turni VVF - ${evento.tipo}`, {
+                            body: `Avviso ${idx+1}: il tuo servizio inizia tra ${labelMinuti}!\n📅 ${new Date(evento.data).toLocaleDateString('it-IT')}`,
+                            icon: 'icons/icon-192.png',
+                            badge: 'icons/icon-72.png',
+                            tag: `vvf-notif-${evento.id}-${idx}`
+                        });
+                    }
+                }, msAlla);
+            });
+        }
+
+        // Riprogramma notifiche degli eventi futuri all'avvio dell'app
+        function riprogrammaNotificheAlAvvio() {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            const ora = Date.now();
+            events.forEach(ev => {
+                if (!ev.notifiche || ev.notifiche.length === 0) return;
+                const dataEv = new Date(ev.data + 'T' + (ev.oraInizio || '08:00') + ':00');
+                if (dataEv.getTime() > ora) {
+                    programmaNotifiche(ev);
+                }
+            });
         }
         
         // Service Worker Registration for PWA
