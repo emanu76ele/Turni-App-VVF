@@ -1610,11 +1610,22 @@
                     // Format ore in HH:mm for L104 and H18
                     const isQualifica = ['CS', 'Autista', 'CS Autista', 'Responsabile SO', 'Sala Operativa',
                         'Prima', 'Seconda', '1 Appoggio', '2 Appoggio', 'SAPR', 'TAS'].includes(event.tipo);
+                    const isPasto = event.tipo === 'Buono Pasto' || event.tipo === 'Mancato Pasto';
+                    const isCorso = event.tipo === 'Corso';
+                    // Voci che usano formato HH:mm (ore decimali → ore:minuti)
+                    const isOreMinuti = ['L104', 'H18', 'Ore Guida', 'Missione Soccorso',
+                        'Missione Ordinario', 'Missione Sostituzione'].includes(event.tipo);
                     let oreDisplay = '';
                     if (isQualifica) {
                         oreDisplay = `${event.quantita || 1} turno${(event.quantita || 1) > 1 ? 'i' : ''}`;
+                    } else if (isPasto) {
+                        const n = event.quantita || event.ore || 1;
+                        oreDisplay = `${n} ${n === 1 ? 'buono' : 'buoni'}`;
+                    } else if (isCorso) {
+                        const n = event.quantita || 1;
+                        oreDisplay = `${n} corso${n > 1 ? 'i' : ''}`;
                     } else if (event.ore) {
-                        if (event.tipo === 'L104' || event.tipo === 'H18') {
+                        if (isOreMinuti) {
                             const ore = Math.floor(event.ore);
                             const minuti = Math.round((event.ore - ore) * 60);
                             oreDisplay = `${ore}:${minuti.toString().padStart(2, '0')}`;
@@ -1637,8 +1648,15 @@
                             const ore = Math.floor(event.quantita);
                             const minuti = Math.round((event.quantita - ore) * 60);
                             timeDisplay = `${ore}:${minuti.toString().padStart(2, '0')}`;
+                        } else if (event.tipo === 'Buono Pasto' || event.tipo === 'Mancato Pasto') {
+                            timeDisplay = `${event.quantita} ${event.quantita === 1 ? 'buono' : 'buoni'}`;
+                        } else if (event.tipo === 'Corso') {
+                            timeDisplay = `${event.quantita} corso${event.quantita > 1 ? 'i' : ''}`;
+                        } else if (event.tipo === 'Ferie') {
+                            timeDisplay = `${event.quantita} giorni`;
                         } else {
-                            timeDisplay = `${event.quantita} ${event.tipo === 'Ferie' ? 'giorni' : 'ore'}`;
+                            timeDisplay = `${event.quantita} ore`;
+                        }
                         }
                     } else {
                         timeDisplay = 'Tutto il giorno';
