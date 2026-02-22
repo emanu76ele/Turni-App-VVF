@@ -69,6 +69,39 @@
             padding: 20px;
         }
 
+        /* Periodo turno card */
+        .periodo-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .periodo-card.periodo-attivo {
+            border-left: 3px solid #10B981;
+            background: #F0FDF4;
+        }
+        .periodo-card.periodo-futuro {
+            border-left: 3px solid #3B82F6;
+            background: #EFF6FF;
+        }
+        .periodo-card.periodo-passato {
+            border-left: 3px solid #D1D5DB;
+            opacity: 0.7;
+        }
+        .periodo-info { flex: 1; font-size: 13px; }
+        .periodo-turno { font-weight: 700; font-size: 14px; color: var(--primary); }
+        .periodo-date { color: var(--text-light); font-size: 11px; margin-top: 2px; }
+        .periodo-stato { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+        .stato-attivo { background: #D1FAE5; color: #065F46; }
+        .stato-futuro { background: #DBEAFE; color: #1E40AF; }
+        .stato-passato { background: #F3F4F6; color: #6B7280; }
+        .periodo-del { background: none; border: none; color: #EF4444; cursor: pointer; font-size: 18px; padding: 4px; }
+
         /* Notification styles */
         .notification-section {
             background: #F0F9FF;
@@ -852,8 +885,9 @@
                         <option value="">Seleziona...</option>
                         <option value="Straordinario Soccorso">Straordinario Soccorso</option>
                         <option value="Straordinario Convenzione">Straordinario Convenzione/Programmato</option>
-                        <option value="Straordinario Notturno">Straordinario Notturno</option>
                         <option value="Vigilanza">Vigilanza</option>
+                        <option value="81/08">81/08</option>
+                        <option value="Corso">Corso</option>
                         <option value="Missione Soccorso">Missione Soccorso</option>
                         <option value="Missione Ordinario">Missione Ordinario</option>
                         <option value="Missione Sostituzione">Missione Sostituzione</option>
@@ -1000,60 +1034,73 @@
             </div>
 
             <div id="turno-tab" class="tab-content active">
-                <div class="form-group">
-                    <label class="form-label">Il Mio Turno</label>
-                    <select class="form-control" id="mioTurno" onchange="updateTurnoUI()">
-                        <option value="">Seleziona turno...</option>
-                        <option value="A">Turno A</option>
-                        <option value="B">Turno B</option>
-                        <option value="C">Turno C</option>
-                        <option value="D">Turno D</option>
-                        <option value="24/72">Turno 24/72</option>
-                    </select>
-                    <small style="color: var(--text-light); font-size: 12px;">Il tuo turno verrà evidenziato nel calendario</small>
+                <!-- Lista periodi esistenti -->
+                <div id="periodi-list" style="margin-bottom: 14px;"></div>
+
+                <!-- Form aggiunta/modifica periodo -->
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:14px;">
+                    <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:12px;">➕ Aggiungi Periodo Turno</div>
+                    <div class="form-group">
+                        <label class="form-label">Turno</label>
+                        <select class="form-control" id="periodoTurno" onchange="updatePeriodoTurnoUI()">
+                            <option value="">Seleziona turno...</option>
+                            <option value="A">Turno A</option>
+                            <option value="B">Turno B</option>
+                            <option value="C">Turno C</option>
+                            <option value="D">Turno D</option>
+                            <option value="24/72">Turno 24/72</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="periodoSquadra2472" style="display:none;">
+                        <label class="form-label">Squadra 24/72</label>
+                        <select class="form-control" id="periodoSquadraVal">
+                            <option value="A/D">A/D</option>
+                            <option value="B/A">B/A</option>
+                            <option value="C/B">C/B</option>
+                            <option value="D/C">D/C</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Salto</label>
+                        <select class="form-control" id="periodoSalto">
+                            <option value="">Seleziona salto...</option>
+                            <option value="1">Salto 1</option>
+                            <option value="2">Salto 2</option>
+                            <option value="3">Salto 3</option>
+                            <option value="4">Salto 4</option>
+                            <option value="5">Salto 5</option>
+                            <option value="6">Salto 6</option>
+                            <option value="7">Salto 7</option>
+                            <option value="8">Salto 8</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Dal</label>
+                            <input type="date" class="form-control" id="periodoInizio">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Al <small style="color:var(--text-light)">(vuoto = illimitato)</small></label>
+                            <input type="date" class="form-control" id="periodoFine">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="aggiungiPeriodoTurno()">
+                        ✅ Aggiungi Periodo
+                    </button>
                 </div>
 
-                <!-- Campo squadra 24/72 (visibile solo se selezionato 24/72) -->
-                <div class="form-group" id="squadra2472Field" style="display:none;">
-                    <label class="form-label">Squadra 24/72</label>
-                    <select class="form-control" id="mioSquadra2472">
-                        <option value="A/D">A/D (Diurno A / Notturno D)</option>
-                        <option value="B/A">B/A (Diurno B / Notturno A)</option>
-                        <option value="C/B">C/B (Diurno C / Notturno B)</option>
-                        <option value="D/C">D/C (Diurno D / Notturno C)</option>
-                    </select>
-                    <small style="color: var(--text-light); font-size: 12px;">Orario servizio: 08:00 → 08:00 (+1g) · Riposo: 72h</small>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Il Mio Salto</label>
-                    <select class="form-control" id="mioSalto">
-                        <option value="">Seleziona salto...</option>
-                        <option value="1">Salto 1</option>
-                        <option value="2">Salto 2</option>
-                        <option value="3">Salto 3</option>
-                        <option value="4">Salto 4</option>
-                        <option value="5">Salto 5</option>
-                        <option value="6">Salto 6</option>
-                        <option value="7">Salto 7</option>
-                        <option value="8">Salto 8</option>
-                    </select>
-                    <small style="color: var(--text-light); font-size: 12px;">Il giorno del tuo turno sarà evidenziato in viola</small>
-                </div>
-                <div style="background: #F3F4F6; padding: 12px; border-radius: 8px; margin-top: 12px;">
-                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <div style="width: 20px; height: 20px; background: #D1FAE5; border: 1px solid #10B981; border-radius: 4px;"></div>
+                <div style="background:#F3F4F6;padding:12px;border-radius:8px;margin-top:4px;">
+                    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="width:20px;height:20px;background:#D1FAE5;border:1px solid #10B981;border-radius:4px;"></div>
                             <span>Tutti i turni con la tua lettera (es: A1, A2, A4...)</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <div style="width: 20px; height: 20px; background: #E9D5FF; border: 1px solid #A855F7; border-radius: 4px;"></div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="width:20px;height:20px;background:#E9D5FF;border:1px solid #A855F7;border-radius:4px;"></div>
                             <span>Esattamente il tuo turno+salto (es: A3)</span>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="salvaImpostazioniTurno()">
-                    💾 Salva Turno
-                </button>
             </div>
 
             <div id="tariffe-tab" class="tab-content">
@@ -1098,8 +1145,16 @@
                         <input type="number" class="form-control" id="tariffaMancatoPasto" step="0.01" min="0" placeholder="es: 32.00">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CS/Autista/SAPR/TAS (€/ora)</label>
+                        <label class="form-label">CS/Autista (€/ora)</label>
                         <input type="number" class="form-control" id="tariffaQualifiche" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Corso (€ fisso)</label>
+                        <input type="number" class="form-control" id="tariffaCorso" step="0.01" min="0" placeholder="es: 50.00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">81/08 (€/ora)</label>
+                        <input type="number" class="form-control" id="tariffa8108" step="0.01" min="0" placeholder="es: 13.80">
                     </div>
                 </div>
                 <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="salvaImpostazioniTariffe()">
@@ -1243,8 +1298,9 @@
             ferieAnnoCorrente: 27,
             ferieResiduePrecedente: 0,
             oreRecuperoResidue: 0,
-            mioTurno: '', // A, B, C, D
-            mioSalto: '', // 1-8
+            mioTurno: '', // legacy
+            mioSalto: '', // legacy
+            periodi: [], // [{turno, salto, squadra2472, dal, al}]
             tariffe: {
                 'Straordinario Soccorso': 13.8,
                 'Straordinario Convenzione': 13.8,
@@ -1260,7 +1316,9 @@
                 'CS': 0,
                 'Autista': 0,
                 'SAPR': 0,
-                'TAS': 0
+                'TAS': 0,
+                'Corso': 0,
+                '81/08': 0
             }
         };
         let currentDate = new Date();
@@ -1406,46 +1464,39 @@
             const shifts = getShiftForDate(date);
             const shift2472 = get2472ShiftForDate(date);
             
+            // Trova il periodo attivo per questa data
+            const periodoAttivo = getPeriodoPerData(dateStr);
+            const mioTurno = periodoAttivo ? periodoAttivo.turno : (settings.mioTurno || '');
+            const mioSalto = periodoAttivo ? periodoAttivo.salto : (settings.mioSalto || '');
+            const mioSquadra = periodoAttivo ? (periodoAttivo.squadra2472 || 'D/C') : (settings.mioSquadra2472 || 'D/C');
+            
             // Check if this is user's shift
-            if (settings.mioTurno) {
-                if (settings.mioTurno === '24/72') {
-                    // 24/72 mode: highlight days when the user's squad is on duty
-                    const userSquadra = settings.mioSquadra2472 || 'D/C';
-                    if (!otherMonth && shift2472 === userSquadra) {
-                        if (settings.mioSalto) {
-                            // Exact salto match: purple (salto is sequential count)
-                            // Since 24/72 repeats every 4 days, we determine the salto number
-                            // by counting which occurrence this is (modulo 8)
+            if (mioTurno && !otherMonth) {
+                if (mioTurno === '24/72') {
+                    if (shift2472 === mioSquadra) {
+                        if (mioSalto) {
                             const baseDate2472 = new Date(2026, 1, 20, 12, 0, 0);
                             const inputDate2 = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
                             const diffTime2 = inputDate2 - baseDate2472;
                             const diffDays2 = Math.floor(diffTime2 / (1000 * 60 * 60 * 24));
-                            // Calculate which occurrence of the squad's shift this is
-                            const squadIdx = ['D/C', 'A/D', 'B/A', 'C/B'].indexOf(userSquadra);
+                            const squadIdx = ['D/C', 'A/D', 'B/A', 'C/B'].indexOf(mioSquadra);
                             const daysFromSquadStart = diffDays2 - squadIdx;
                             const shiftNum = ((Math.floor(daysFromSquadStart / 4) % 8) + 8) % 8 + 1;
-                            if (String(shiftNum) === String(settings.mioSalto)) {
-                                div.classList.add('my-shift-day');
-                            } else {
-                                div.classList.add('my-shift');
-                            }
+                            div.classList.add(String(shiftNum) === String(mioSalto) ? 'my-shift-day' : 'my-shift');
                         } else {
                             div.classList.add('my-shift');
                         }
                     }
                 } else {
-                    const userShift = settings.mioTurno + settings.mioSalto;
+                    const userShift = mioTurno + mioSalto;
                     const dayShiftLetter = shifts.day.charAt(0);
                     const nightShiftLetter = shifts.night.charAt(0);
-                    const isMyShiftLetter = dayShiftLetter === settings.mioTurno || nightShiftLetter === settings.mioTurno;
+                    const isMyShiftLetter = dayShiftLetter === mioTurno || nightShiftLetter === mioTurno;
                     const isExactMyShift = shifts.day === userShift || shifts.night === userShift;
-                    
-                    if (!otherMonth) {
-                        if (isExactMyShift) {
-                            div.classList.add('my-shift-day');
-                        } else if (isMyShiftLetter) {
-                            div.classList.add('my-shift');
-                        }
+                    if (isExactMyShift) {
+                        div.classList.add('my-shift-day');
+                    } else if (isMyShiftLetter) {
+                        div.classList.add('my-shift');
                     }
                 }
             }
@@ -1486,6 +1537,9 @@
                     } else if (event.tipo === 'Vigilanza') {
                         badge.classList.add('event-vigilanza-d');
                         badgeText = 'VIG';
+                    } else if (event.tipo === '81/08') {
+                        badge.classList.add('event-vigilanza-n');
+                        badgeText = '81/08';
                     } else if (event.tipo === 'Ferie') {
                         badge.classList.add('event-ferie');
                         badgeText = 'FERIE';
@@ -1779,27 +1833,32 @@
                 document.getElementById('l104h18Ore').value = 0;
                 document.getElementById('l104h18Minuti').value = 0;
             }
-            // Voci con selezione turno automatico (CS, Autista, SAPR, TAS, etc) - solo conteggio
+            // Qualifiche presenziali - solo conteggio
             else if (tipo === 'CS' || tipo === 'Autista' || tipo === 'CS Autista' || 
                      tipo === 'Responsabile SO' || tipo === 'Sala Operativa' ||
                      tipo === 'Prima' || tipo === 'Seconda' || 
                      tipo === '1 Appoggio' || tipo === '2 Appoggio' ||
                      tipo === 'SAPR' || tipo === 'TAS') {
-                // Nessun campo aggiuntivo - registra solo la presenza (conteggio 1)
+                // Nessun campo aggiuntivo
             }
-            // Ferie - solo quantità giorni
+            // Ferie - quantità giorni
             else if (tipo === 'Ferie') {
                 quantitaField.style.display = 'block';
                 document.getElementById('quantita').value = 1;
             }
-            // Buono Pasto, Mancato Pasto - quantità
-            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto') {
+            // Buono Pasto, Mancato Pasto, Corso - importo fisso/quantità
+            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Corso') {
                 quantitaField.style.display = 'block';
                 document.getElementById('quantita').value = 1;
+                // Aggiorna label quantità per Corso
+                const qLabel = document.querySelector('#quantitaField .form-label');
+                if (qLabel) qLabel.textContent = tipo === 'Corso' ? 'Numero Corsi' : 'Quantità (giorni/ore)';
             }
             // Tutto il resto - ore inizio/fine
             else if (tipo) {
                 timeFields.style.display = 'grid';
+                const qLabel = document.querySelector('#quantitaField .form-label');
+                if (qLabel) qLabel.textContent = 'Quantità (giorni/ore)';
             }
         }
 
@@ -1877,8 +1936,8 @@
             else if (tipo === 'Ferie') {
                 ore = quantita;
             }
-            // Pasti - quantità
-            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto') {
+            // Pasti e Corso - quantità/conteggio
+            else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Corso') {
                 ore = quantita;
             }
             // Calcolo ore normale da orari + split diurno/notturno
@@ -1888,8 +1947,8 @@
                 ore = ((h2 * 60 + m2) - (h1 * 60 + m1)) / 60;
                 if (ore < 0) ore += 24;
                 
-                // Per Vigilanza e Straordinari calcola split diurno/notturno
-                if (tipo === 'Vigilanza' || tipo.includes('Straordinario')) {
+                // Per Vigilanza, 81/08 e Straordinari calcola split diurno/notturno
+                if (tipo === 'Vigilanza' || tipo === '81/08' || tipo.includes('Straordinario')) {
                     const split = calcolaOreDiurnoNotturno(oraInizio, oraFine);
                     oreDiurne = split.oreDiurne;
                     oreNotturne = split.oreNotturne;
@@ -1901,6 +1960,9 @@
                 const tarD = settings.tariffe['Vigilanza Diurno'] || 0;
                 const tarN = settings.tariffe['Vigilanza Notturno'] || 0;
                 compenso = (oreDiurne * tarD) + (oreNotturne * tarN);
+            } else if (tipo === '81/08' && oraInizio && oraFine) {
+                const tar = settings.tariffe['81/08'] || 0;
+                compenso = ore * tar;
             } else if (tipo.includes('Straordinario') && oraInizio && oraFine) {
                 // Per straordinari: quota notturna usa tariffa Straordinario Notturno
                 const tarBase = settings.tariffe[getTariffaKey(tipo)] || 0;
@@ -2013,8 +2075,10 @@
             const mapping = {
                 'Straordinario Soccorso': 'Straordinario Soccorso',
                 'Straordinario Convenzione': 'Straordinario Convenzione',
-                'Straordinario Notturno': 'Straordinario Notturno',
-                'Vigilanza': null, // compenso calcolato direttamente con split diurno/notturno
+                'Straordinario Notturno': 'Straordinario Notturno', // legacy
+                'Vigilanza': null, // compenso calcolato con split diurno/notturno
+                'Corso': 'Corso',
+                '81/08': '81/08',
                 'Missione Soccorso': 'Missione Soccorso',
                 'Missione Ordinario': 'Missione Ordinario',
                 'Missione Sostituzione': 'Missione Sostituzione',
@@ -2054,16 +2118,32 @@
                     'CS': 0,
                     'Autista': 0,
                     'SAPR': 0,
-                    'TAS': 0
+                    'TAS': 0,
+                    'Corso': 0,
+                    '81/08': 0
                 };
             }
+            // Aggiungi Corso se manca (aggiornamento da versione precedente)
+            if (settings.tariffe['Corso'] === undefined) settings.tariffe['Corso'] = 0;
+            if (settings.tariffe['81/08'] === undefined) settings.tariffe['81/08'] = 0;
             
-            document.getElementById('mioTurno').value = settings.mioTurno || '';
-            document.getElementById('mioSalto').value = settings.mioSalto || '';
-            updateTurnoUI();
-            if (settings.mioSquadra2472) {
-                document.getElementById('mioSquadra2472').value = settings.mioSquadra2472;
+            document.getElementById('mioTurno') && (document.getElementById('mioTurno').value = settings.mioTurno || '');
+            document.getElementById('mioSalto') && (document.getElementById('mioSalto').value = settings.mioSalto || '');
+            // Inizializza periodi se non esistono (migrazione da vecchio formato)
+            if (!settings.periodi) {
+                settings.periodi = [];
+                if (settings.mioTurno) {
+                    settings.periodi.push({
+                        id: Date.now(),
+                        turno: settings.mioTurno,
+                        salto: settings.mioSalto,
+                        squadra2472: settings.mioSquadra2472 || '',
+                        dal: '',
+                        al: ''
+                    });
+                }
             }
+            renderPeriodiList();
             document.getElementById('ferieAnnoCorrente').value = settings.ferieAnnoCorrente;
             document.getElementById('ferieResiduePrecedente').value = settings.ferieResiduePrecedente;
             document.getElementById('oreRecuperoResidue').value = settings.oreRecuperoResidue;
@@ -2079,6 +2159,8 @@
             document.getElementById('tariffaBuonoPasto').value = settings.tariffe['Buono Pasto'] || '';
             document.getElementById('tariffaMancatoPasto').value = settings.tariffe['Mancato Pasto'] || '';
             document.getElementById('tariffaQualifiche').value = settings.tariffe['CS'] || '';
+            document.getElementById('tariffaCorso').value = settings.tariffe['Corso'] || '';
+            document.getElementById('tariffa8108').value = settings.tariffe['81/08'] || '';
             
             // Load cloud settings
             document.getElementById('cloudService').value = settings.cloudService || '';
@@ -2110,24 +2192,104 @@
         }
 
         function salvaImpostazioniTurno() {
-            settings.mioTurno = document.getElementById('mioTurno').value;
-            settings.mioSalto = document.getElementById('mioSalto').value;
-            if (settings.mioTurno === '24/72') {
-                settings.mioSquadra2472 = document.getElementById('mioSquadra2472').value;
-            }
+            // Ora la gestione turno avviene tramite aggiungiPeriodoTurno/eliminaPeriodo
             localStorage.setItem('vvfSettings', JSON.stringify(settings));
             renderCalendar();
-            alert('Impostazioni turno salvate!');
         }
 
         function updateTurnoUI() {
-            const turno = document.getElementById('mioTurno').value;
-            const squadraField = document.getElementById('squadra2472Field');
-            if (turno === '24/72') {
-                squadraField.style.display = 'block';
-            } else {
-                squadraField.style.display = 'none';
+            // legacy - non più usata
+        }
+
+        function updatePeriodoTurnoUI() {
+            const turno = document.getElementById('periodoTurno').value;
+            document.getElementById('periodoSquadra2472').style.display = turno === '24/72' ? 'block' : 'none';
+        }
+
+        function getPeriodoPerData(dateStr) {
+            if (!settings.periodi || settings.periodi.length === 0) return null;
+            // Trova il periodo che copre questa data (più recente vince)
+            const matches = settings.periodi.filter(p => {
+                const dopo = !p.dal || dateStr >= p.dal;
+                const prima = !p.al || dateStr <= p.al;
+                return dopo && prima;
+            });
+            if (matches.length === 0) return null;
+            // Priorità: periodo con data inizio più recente
+            return matches.sort((a, b) => (b.dal || '0000-00-00').localeCompare(a.dal || '0000-00-00'))[0];
+        }
+
+        function aggiungiPeriodoTurno() {
+            const turno = document.getElementById('periodoTurno').value;
+            const salto = document.getElementById('periodoSalto').value;
+            const dal = document.getElementById('periodoInizio').value;
+            const al = document.getElementById('periodoFine').value;
+            const squadra2472 = document.getElementById('periodoSquadraVal').value;
+
+            if (!turno) { alert('Seleziona un turno'); return; }
+            if (!salto) { alert('Seleziona un salto'); return; }
+            if (!dal) { alert('Inserisci la data di inizio'); return; }
+            if (al && al < dal) { alert('La data fine non può essere prima della data inizio'); return; }
+
+            if (!settings.periodi) settings.periodi = [];
+            settings.periodi.push({
+                id: Date.now(),
+                turno, salto, squadra2472, dal, al
+            });
+            // Ordina per data inizio
+            settings.periodi.sort((a, b) => (a.dal || '').localeCompare(b.dal || ''));
+            localStorage.setItem('vvfSettings', JSON.stringify(settings));
+            
+            // Reset form
+            document.getElementById('periodoTurno').value = '';
+            document.getElementById('periodoSalto').value = '';
+            document.getElementById('periodoInizio').value = '';
+            document.getElementById('periodoFine').value = '';
+            document.getElementById('periodoSquadra2472').style.display = 'none';
+            
+            renderPeriodiList();
+            renderCalendar();
+        }
+
+        function eliminaPeriodo(id) {
+            if (!confirm('Eliminare questo periodo?')) return;
+            settings.periodi = settings.periodi.filter(p => p.id !== id);
+            localStorage.setItem('vvfSettings', JSON.stringify(settings));
+            renderPeriodiList();
+            renderCalendar();
+        }
+
+        function renderPeriodiList() {
+            const container = document.getElementById('periodi-list');
+            if (!container) return;
+            if (!settings.periodi || settings.periodi.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:10px 0;">Nessun periodo configurato</div>';
+                return;
             }
+            const oggi = new Date().toISOString().split('T')[0];
+            container.innerHTML = settings.periodi.map(p => {
+                let stato, statoClass, cardClass;
+                if (!p.al || p.al >= oggi) {
+                    if (!p.dal || p.dal <= oggi) {
+                        stato = '● Attivo'; statoClass = 'stato-attivo'; cardClass = 'periodo-attivo';
+                    } else {
+                        stato = '◎ Futuro'; statoClass = 'stato-futuro'; cardClass = 'periodo-futuro';
+                    }
+                } else {
+                    stato = '○ Passato'; statoClass = 'stato-passato'; cardClass = 'periodo-passato';
+                }
+                const dalStr = p.dal ? new Date(p.dal + 'T12:00:00').toLocaleDateString('it-IT') : 'Sempre';
+                const alStr = p.al ? new Date(p.al + 'T12:00:00').toLocaleDateString('it-IT') : '∞';
+                const turnoLabel = p.turno === '24/72' ? `24/72 (${p.squadra2472})` : `Turno ${p.turno}`;
+                return `<div class="periodo-card ${cardClass}">
+                    <div class="periodo-info">
+                        <div class="periodo-turno">${turnoLabel} · Salto ${p.salto}</div>
+                        <div class="periodo-date">📅 ${dalStr} → ${alStr}</div>
+                    </div>
+                    <span class="periodo-stato ${statoClass}">${stato}</span>
+                    <button class="periodo-del" onclick="eliminaPeriodo(${p.id})" title="Elimina">🗑</button>
+                </div>`;
+            }).join('');
         }
 
         function salvaImpostazioniTariffe() {
@@ -2147,6 +2309,8 @@
             settings.tariffe['Autista'] = tariffaQualifiche;
             settings.tariffe['SAPR'] = tariffaQualifiche;
             settings.tariffe['TAS'] = tariffaQualifiche;
+            settings.tariffe['Corso'] = parseFloat(document.getElementById('tariffaCorso').value) || 0;
+            settings.tariffe['81/08'] = parseFloat(document.getElementById('tariffa8108').value) || 0;
             
             localStorage.setItem('vvfSettings', JSON.stringify(settings));
             alert('Tariffe salvate! Ricalcola gli eventi esistenti per applicare le nuove tariffe.');
