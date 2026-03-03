@@ -430,22 +430,6 @@
             border-color: #A855F7 !important;
         }
 
-        .calendar-day.g5-shift {
-            background: #FEF9C3 !important;
-            border-color: #EAB308 !important;
-        }
-
-        .g5-badge {
-            display: inline-block;
-            background: #EAB308;
-            color: white;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 3px;
-            margin-top: 2px;
-        }
-
         .calendar-day.today {
             border: 2px solid var(--primary);
             background: #FEF2F2;
@@ -970,23 +954,6 @@
                     <input type="number" class="form-control" id="quantita" min="0.5" step="0.5" value="1">
                 </div>
 
-                <!-- Campi data solo per Corso -->
-                <div id="corsoPeriodoFields" style="display:none;">
-                    <div style="background:#FEF9C3;border:1px solid #EAB308;border-radius:8px;padding:12px;margin-bottom:8px;">
-                        <div style="font-size:12px;font-weight:600;color:#92400E;margin-bottom:10px;">📅 Periodo del Corso — verrà applicato il turno G5 sul calendario</div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Inizio Corso</label>
-                                <input type="date" class="form-control" id="corsoDataInizio">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Fine Corso</label>
-                                <input type="date" class="form-control" id="corsoDataFine">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label class="form-label">Note (opzionale)</label>
                     <input type="text" class="form-control" id="noteEvento" placeholder="Aggiungi note...">
@@ -1082,7 +1049,6 @@
                             <option value="C">Turno C</option>
                             <option value="D">Turno D</option>
                             <option value="24/72">Turno 24/72</option>
-                            <option value="G5">Turno G5 (Lun-Gio 08:30-17:30 / Ven 08:30-12:30)</option>
                         </select>
                     </div>
                     <div class="form-group" id="periodoSquadra2472" style="display:none;">
@@ -1094,7 +1060,7 @@
                             <option value="D/C">D/C</option>
                         </select>
                     </div>
-                    <div class="form-group" id="periodoSaltoField">
+                    <div class="form-group">
                         <label class="form-label">Salto</label>
                         <select class="form-control" id="periodoSalto">
                             <option value="">Seleziona salto...</option>
@@ -1107,7 +1073,6 @@
                             <option value="7">Salto 7</option>
                             <option value="8">Salto 8</option>
                         </select>
-                    </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -1507,13 +1472,7 @@
             
             // Check if this is user's shift
             if (mioTurno && !otherMonth) {
-                if (mioTurno === 'G5') {
-                    // G5 vale solo Lun-Ven (0=Dom,1=Lun,...,5=Ven,6=Sab)
-                    const wd = date.getDay();
-                    if (wd >= 1 && wd <= 5) {
-                        div.classList.add('g5-shift');
-                    }
-                } else if (mioTurno === '24/72') {
+                if (mioTurno === '24/72') {
                     if (shift2472 === mioSquadra) {
                         if (mioSalto) {
                             const baseDate2472 = new Date(2026, 1, 20, 12, 0, 0);
@@ -1544,39 +1503,20 @@
             
             const shiftsContainer = document.createElement('div');
             shiftsContainer.className = 'day-shifts';
-            
-            if (mioTurno === 'G5' && !otherMonth && date.getDay() >= 1 && date.getDay() <= 5) {
-                // Mostra orari G5
-                const isVenerdi = date.getDay() === 5;
-                shiftsContainer.innerHTML = `
-                    <div class="shift-row">
-                        <span class="shift-label">D</span>
-                        <span class="shift-value">${shifts.day}</span>
-                    </div>
-                    <div class="shift-row">
-                        <span class="shift-label">N</span>
-                        <span class="shift-value">${shifts.night}</span>
-                    </div>
-                    <div class="shift-row">
-                        <span class="g5-badge">G5 ${isVenerdi ? '08:30-12:30' : '08:30-17:30'}</span>
-                    </div>
-                `;
-            } else {
-                shiftsContainer.innerHTML = `
-                    <div class="shift-row">
-                        <span class="shift-label">D</span>
-                        <span class="shift-value">${shifts.day}</span>
-                    </div>
-                    <div class="shift-row">
-                        <span class="shift-label">N</span>
-                        <span class="shift-value">${shifts.night}</span>
-                    </div>
-                    <div class="shift-row">
-                        <span class="shift-label" style="font-size:9px;color:#7C3AED;">24h</span>
-                        <span class="shift-value" style="font-size:9px;color:#7C3AED;">${shift2472}</span>
-                    </div>
-                `;
-            }
+            shiftsContainer.innerHTML = `
+                <div class="shift-row">
+                    <span class="shift-label">D</span>
+                    <span class="shift-value">${shifts.day}</span>
+                </div>
+                <div class="shift-row">
+                    <span class="shift-label">N</span>
+                    <span class="shift-value">${shifts.night}</span>
+                </div>
+                <div class="shift-row">
+                    <span class="shift-label" style="font-size:9px;color:#7C3AED;">24h</span>
+                    <span class="shift-value" style="font-size:9px;color:#7C3AED;">${shift2472}</span>
+                </div>
+            `;
             div.appendChild(shiftsContainer);
             
             // Events for this day
@@ -1889,7 +1829,6 @@
             document.getElementById('quantitaField').style.display = 'none';
             document.getElementById('l104h18Fields').style.display = 'none';
             document.getElementById('turnoTypeField').style.display = 'none';
-            document.getElementById('corsoPeriodoFields').style.display = 'none';
         }
 
         function updateFormFields() {
@@ -1904,7 +1843,6 @@
             quantitaField.style.display = 'none';
             l104h18Fields.style.display = 'none';
             turnoTypeField.style.display = 'none';
-            document.getElementById('corsoPeriodoFields').style.display = 'none';
             
             // L104 e H18 - ore e minuti separati
             if (tipo === 'L104' || tipo === 'H18') {
@@ -1932,10 +1870,6 @@
                 // Aggiorna label quantità per Corso
                 const qLabel = document.querySelector('#quantitaField .form-label');
                 if (qLabel) qLabel.textContent = tipo === 'Corso' ? 'Numero Corsi' : 'Quantità (giorni/ore)';
-                // Mostra pannello date solo per Corso
-                if (tipo === 'Corso') {
-                    document.getElementById('corsoPeriodoFields').style.display = 'block';
-                }
             }
             // Tutto il resto - ore inizio/fine
             else if (tipo) {
@@ -1985,10 +1919,6 @@
             const quantita = parseFloat(document.getElementById('quantita').value) || 1;
             const note = document.getElementById('noteEvento').value;
             const pdfFileInput = document.getElementById('pdfFile');
-            
-            // Raccoglie date corso (per creare periodo G5 automatico)
-            const corsoDataInizio = document.getElementById('corsoDataInizio') ? document.getElementById('corsoDataInizio').value : '';
-            const corsoDataFine = document.getElementById('corsoDataFine') ? document.getElementById('corsoDataFine').value : '';
             
             // Raccoglie impostazioni notifiche
             const notifiche = [];
@@ -2088,9 +2018,7 @@
                         ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
                         oreDiurne, oreNotturne,
                         compenso: isQualifica ? 0 : compenso,
-                        note, pdf: pdfData, pdfName: file.name, notifiche,
-                        corsoDataInizio: tipo === 'Corso' ? corsoDataInizio : '',
-                        corsoDataFine: tipo === 'Corso' ? corsoDataFine : ''
+                        note, pdf: pdfData, pdfName: file.name, notifiche
                     };
                     saveEventToStorage(newEvent);
                 };
@@ -2104,9 +2032,7 @@
                     ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
                     oreDiurne, oreNotturne,
                     compenso: isQualifica ? 0 : compenso,
-                    note, notifiche,
-                    corsoDataInizio: tipo === 'Corso' ? corsoDataInizio : '',
-                    corsoDataFine: tipo === 'Corso' ? corsoDataFine : ''
+                    note, notifiche
                 };
                 saveEventToStorage(newEvent);
             }
@@ -2123,11 +2049,6 @@
             // Programma notifiche push
             if (event.notifiche && event.notifiche.length > 0) {
                 programmaNotifiche(event);
-            }
-            
-            // Se è un Corso con date → crea automaticamente periodo G5
-            if (event.tipo === 'Corso' && event.corsoDataInizio) {
-                creaPeriodog5DaCorso(event);
             }
             
             closeModal();
@@ -2300,8 +2221,6 @@
         function updatePeriodoTurnoUI() {
             const turno = document.getElementById('periodoTurno').value;
             document.getElementById('periodoSquadra2472').style.display = turno === '24/72' ? 'block' : 'none';
-            // G5 non ha salto
-            document.getElementById('periodoSaltoField').style.display = turno === 'G5' ? 'none' : 'block';
         }
 
         function getPeriodoPerData(dateStr) {
@@ -2325,14 +2244,14 @@
             const squadra2472 = document.getElementById('periodoSquadraVal').value;
 
             if (!turno) { alert('Seleziona un turno'); return; }
-            if (turno !== 'G5' && !salto) { alert('Seleziona un salto'); return; }
+            if (!salto) { alert('Seleziona un salto'); return; }
             if (!dal) { alert('Inserisci la data di inizio'); return; }
             if (al && al < dal) { alert('La data fine non può essere prima della data inizio'); return; }
 
             if (!settings.periodi) settings.periodi = [];
             settings.periodi.push({
                 id: Date.now(),
-                turno, salto: turno === 'G5' ? '' : salto, squadra2472, dal, al
+                turno, salto, squadra2472, dal, al
             });
             // Ordina per data inizio
             settings.periodi.sort((a, b) => (a.dal || '').localeCompare(b.dal || ''));
@@ -2378,13 +2297,10 @@
                 }
                 const dalStr = p.dal ? new Date(p.dal + 'T12:00:00').toLocaleDateString('it-IT') : 'Sempre';
                 const alStr = p.al ? new Date(p.al + 'T12:00:00').toLocaleDateString('it-IT') : '∞';
-                const turnoLabel = p.turno === '24/72' ? `24/72 (${p.squadra2472})` : 
-                                   p.turno === 'G5' ? '🟡 G5 (Lun-Gio 08:30-17:30 / Ven 08:30-12:30)' :
-                                   `Turno ${p.turno}`;
-                const saltoLabel = p.turno === 'G5' ? '' : ` · Salto ${p.salto}`;
+                const turnoLabel = p.turno === '24/72' ? `24/72 (${p.squadra2472})` : `Turno ${p.turno}`;
                 return `<div class="periodo-card ${cardClass}">
                     <div class="periodo-info">
-                        <div class="periodo-turno">${turnoLabel}${saltoLabel}</div>
+                        <div class="periodo-turno">${turnoLabel} · Salto ${p.salto}</div>
                         <div class="periodo-date">📅 ${dalStr} → ${alStr}</div>
                     </div>
                     <span class="periodo-stato ${statoClass}">${stato}</span>
@@ -2639,30 +2555,6 @@
             doc.save(filename);
             
             closeExportModal();
-        }
-
-        // ========== G5 DA CORSO ==========
-
-        function creaPeriodog5DaCorso(evento) {
-            if (!evento.corsoDataInizio) return;
-            if (!settings.periodi) settings.periodi = [];
-            
-            // Evita duplicati (stesso periodo G5 già esistente per quelle date)
-            const dup = settings.periodi.find(p =>
-                p.turno === 'G5' && p.dal === evento.corsoDataInizio && p.al === (evento.corsoDataFine || '')
-            );
-            if (dup) return;
-            
-            settings.periodi.push({
-                id: Date.now() + 1,
-                turno: 'G5',
-                salto: '',
-                squadra2472: '',
-                dal: evento.corsoDataInizio,
-                al: evento.corsoDataFine || ''
-            });
-            settings.periodi.sort((a, b) => (a.dal || '').localeCompare(b.dal || ''));
-            localStorage.setItem('vvfSettings', JSON.stringify(settings));
         }
 
         // ========== NOTIFICHE PUSH ==========
