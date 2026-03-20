@@ -1488,12 +1488,10 @@
         }
 
         function getShiftForDate(date) {
-            // Create base date at noon to avoid timezone issues
-            const baseDate = new Date(2026, 0, 1, 12, 0, 0);
-            const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-            
-            const diffTime = inputDate - baseDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            // Usa UTC per evitare problemi con l'ora legale (es. 29 marzo, 25 ottobre)
+            const baseDate = Date.UTC(2026, 0, 1);
+            const inputDate = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+            const diffDays = Math.round((inputDate - baseDate) / (1000 * 60 * 60 * 24));
             
             const shifts = ['B', 'C', 'D', 'A']; // Starting from B on day 0
             
@@ -1540,10 +1538,9 @@
         // Calcola quale squadra 24/72 è in servizio in un dato giorno
         // Riferimento: 20/02/2026 → squadra D/C in servizio dalle 08:00
         function get2472ShiftForDate(date) {
-            const baseDate = new Date(2026, 1, 20, 12, 0, 0); // 20/02/2026 = D/C
-            const inputDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-            const diffTime = inputDate - baseDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const baseDate = Date.UTC(2026, 1, 20); // 20/02/2026 = D/C
+            const inputDate = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+            const diffDays = Math.round((inputDate - baseDate) / (1000 * 60 * 60 * 24));
             // Rotazione: D/C, A/D, B/A, C/B (ogni 4 giorni)
             const squads = ['D/C', 'A/D', 'B/A', 'C/B'];
             const idx = ((diffDays % 4) + 4) % 4;
@@ -1631,10 +1628,9 @@
                 } else if (mioTurno === '24/72') {
                     if (shift2472 === mioSquadra) {
                         if (mioSalto) {
-                            const baseDate2472 = new Date(2026, 1, 20, 12, 0, 0);
-                            const inputDate2 = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-                            const diffTime2 = inputDate2 - baseDate2472;
-                            const diffDays2 = Math.floor(diffTime2 / (1000 * 60 * 60 * 24));
+                            const baseDate2472 = Date.UTC(2026, 1, 20);
+                            const inputDate2 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+                            const diffDays2 = Math.round((inputDate2 - baseDate2472) / (1000 * 60 * 60 * 24));
                             const squadIdx = ['D/C', 'A/D', 'B/A', 'C/B'].indexOf(mioSquadra);
                             const daysFromSquadStart = diffDays2 - squadIdx;
                             const shiftNum = ((Math.floor(daysFromSquadStart / 4) % 8) + 8) % 8 + 1;
