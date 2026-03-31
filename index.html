@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#DC143C">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -63,41 +63,12 @@
             color: var(--text);
             /* Spazio per il banner fisso in basso + gesture bar Android */
             padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px));
-            /* Adatta a tutti gli schermi */
-            min-height: 100vh;
-            width: 100%;
-            overflow-x: hidden;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Rotazione orizzontale */
-        @media (orientation: landscape) and (max-width: 900px) {
-            .container {
-                padding: 10px;
-            }
-            header {
-                padding: 8px 0 !important;
-            }
-            header h1 {
-                font-size: 18px !important;
-            }
-            .header-actions {
-                gap: 6px !important;
-            }
-            .header-actions .btn {
-                padding: 6px 10px !important;
-                font-size: 12px !important;
-            }
-            .calendar-day {
-                min-height: 60px !important;
-            }
         }
 
         /* Periodo turno card */
@@ -1306,54 +1277,95 @@
             </div>
 
             <div id="cloud-tab" class="tab-content">
-                <p style="color: var(--text-light); margin-bottom: 16px; font-size: 13px;">
-                    Sincronizza i tuoi dati su cloud per backup automatico e accesso da più dispositivi.
-                </p>
-                
-                <div style="background: #FEF3C7; border: 1px solid #F59E0B; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
-                    ⚠️ <strong>Importante:</strong> I dati vengono salvati come file JSON. Mantieni la cartella sincronizzata per evitare perdite di dati.
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Servizio Cloud</label>
-                    <select class="form-control" id="cloudService">
-                        <option value="">Nessuno (solo locale)</option>
-                        <option value="manual">Backup/Ripristino Manuale</option>
-                    </select>
-                    <small style="color: var(--text-light); font-size: 12px;">
-                        Le API cloud richiedono autenticazione. Usa backup manuale per scaricare/caricare i dati.
-                    </small>
-                </div>
+                <!-- ESPORTA BACKUP -->
+                <div style="margin-bottom:20px;">
+                    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📤 Esporta Backup</div>
 
-                <div id="manualBackupSection" style="display: none; margin-top: 20px;">
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button class="btn btn-primary" onclick="scaricaBackup()" style="width: 100%;">
-                            ☁️ Scarica Backup Completo
+                    <!-- Backup Locale -->
+                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">💾 Backup Locale</div>
+                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il file JSON sul telefono.</div>
+                        <button class="btn btn-primary" onclick="scaricaBackup()" style="width:100%;">
+                            ⬇️ Scarica Backup sul Dispositivo
                         </button>
-                        <button class="btn btn-secondary" onclick="document.getElementById('fileRestore').click()" style="width: 100%;">
-                            📥 Carica Backup
-                        </button>
-                        <input type="file" id="fileRestore" accept=".json" style="display: none;" onchange="ripristinaBackup(event)">
                     </div>
-                    
-                    <div style="margin-top: 20px; padding: 12px; background: #F3F4F6; border-radius: 8px; font-size: 13px;">
-                        <strong>Come funziona:</strong>
-                        <ul style="margin: 8px 0 0 20px; color: var(--text-light);">
-                            <li>Scarica il backup (file JSON) sul tuo dispositivo</li>
-                            <li>Salvalo su iCloud Drive, Google Drive o OneDrive</li>
-                            <li>Su altri dispositivi, scarica il file e caricalo qui</li>
-                            <li>Il backup include: eventi, impostazioni, PDF allegati</li>
-                        </ul>
+
+                    <!-- Google Drive -->
+                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span style="font-size:18px;">🔵</span>
+                            <span style="font-size:13px;font-weight:600;">Google Drive</span>
+                        </div>
+                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il backup e salvalo su Google Drive manualmente.</div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" onclick="scaricaBackupEApri('drive')" style="flex:1;font-size:13px;">
+                                ⬇️ Scarica + Apri Drive
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-light);">
-                        Ultimo backup: <span id="lastBackupTime">Mai</span>
+
+                    <!-- iCloud -->
+                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span style="font-size:18px;">☁️</span>
+                            <span style="font-size:13px;font-weight:600;">iCloud Drive</span>
+                        </div>
+                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il backup e salvalo su iCloud Drive manualmente.</div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" onclick="scaricaBackupEApri('icloud')" style="flex:1;font-size:13px;">
+                                ⬇️ Scarica + Apri iCloud
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- OneDrive -->
+                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span style="font-size:18px;">🔷</span>
+                            <span style="font-size:13px;font-weight:600;">OneDrive</span>
+                        </div>
+                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il backup e salvalo su OneDrive manualmente.</div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" onclick="scaricaBackupEApri('onedrive')" style="flex:1;font-size:13px;">
+                                ⬇️ Scarica + Apri OneDrive
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div id="autoSyncInfo" style="margin-top: 20px; padding: 12px; background: #DBEAFE; border: 1px solid #3B82F6; border-radius: 8px; font-size: 13px;">
-                    💡 <strong>Consiglio:</strong> Scarica un backup regolarmente e salvalo nel tuo cloud preferito (iCloud/Drive/OneDrive) per sicurezza.
+                <!-- IMPORTA BACKUP -->
+                <div style="margin-bottom:20px;">
+                    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📥 Ripristina Backup</div>
+                    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px;">
+                        <div style="font-size:12px;color:#DC2626;margin-bottom:10px;">⚠️ Il ripristino sovrascriverà tutti i dati attuali.</div>
+                        <button class="btn btn-secondary" onclick="document.getElementById('fileRestore').click()" style="width:100%;border-color:#DC2626;color:#DC2626;">
+                            📂 Seleziona File di Backup (.json)
+                        </button>
+                        <input type="file" id="fileRestore" accept=".json" style="display:none;" onchange="ripristinaBackup(event)">
+                        <div style="font-size:12px;color:var(--text-light);margin-top:8px;text-align:center;">
+                            Seleziona il file .json scaricato da Drive, iCloud o OneDrive
+                        </div>
+                    </div>
                 </div>
+
+                <!-- INFO ULTIMO BACKUP -->
+                <div style="padding:10px 12px;background:#F3F4F6;border-radius:8px;font-size:12px;color:var(--text-light);">
+                    🕐 Ultimo backup: <strong><span id="lastBackupTime">Mai</span></strong>
+                </div>
+
+                <!-- ISTRUZIONI -->
+                <div style="margin-top:14px;padding:12px;background:#DBEAFE;border:1px solid #3B82F6;border-radius:8px;font-size:12px;">
+                    <strong>💡 Come funziona:</strong>
+                    <ol style="margin:6px 0 0 16px;color:var(--text-light);line-height:1.6;">
+                        <li>Clicca "Scarica + Apri Drive/iCloud/OneDrive"</li>
+                        <li>Il file viene salvato nelle Download del telefono</li>
+                        <li>Si apre automaticamente l'app cloud selezionata</li>
+                        <li>Carica il file nella tua cartella cloud</li>
+                        <li>Per ripristinare: scarica il file dal cloud e usa "Seleziona File di Backup"</li>
+                    </ol>
+                </div>
+
             </div>
 
             <div id="reset-tab" class="tab-content">
@@ -2421,34 +2433,14 @@
             document.getElementById('tariffaCorso').value = settings.tariffe['Corso'] || '';
             document.getElementById('tariffa8108').value = settings.tariffe['81/08'] || '';
             
-            // Load cloud settings
-            document.getElementById('cloudService').value = settings.cloudService || '';
-            updateCloudServiceUI();
-            
-            // Add cloud service change listener
-            document.getElementById('cloudService').addEventListener('change', function() {
-                settings.cloudService = this.value;
-                localStorage.setItem('vvfSettings', JSON.stringify(settings));
-                updateCloudServiceUI();
-            });
-            
             // Load last backup time
             const lastBackup = localStorage.getItem('lastBackupTime');
             if (lastBackup) {
-                document.getElementById('lastBackupTime').textContent = new Date(lastBackup).toLocaleString('it-IT');
+                const el = document.getElementById('lastBackupTime');
+                if (el) el.textContent = new Date(lastBackup).toLocaleString('it-IT');
             }
         }
         
-        function updateCloudServiceUI() {
-            const service = document.getElementById('cloudService').value;
-            const manualSection = document.getElementById('manualBackupSection');
-            
-            if (service === 'manual') {
-                manualSection.style.display = 'block';
-            } else {
-                manualSection.style.display = 'none';
-            }
-        }
 
         function salvaImpostazioniTurno() {
             // Ora la gestione turno avviene tramite aggiungiPeriodoTurno/eliminaPeriodo
@@ -2633,26 +2625,46 @@
 
         function scaricaBackup() {
             const backupData = {
-                version: '1.0',
+                version: '2.0',
                 timestamp: new Date().toISOString(),
+                app: 'Turni VVF',
                 events: events,
                 settings: settings
             };
-            
             const dataStr = JSON.stringify(backupData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `turni-vvf-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-            
-            // Save backup time
-            localStorage.setItem('lastBackupTime', new Date().toISOString());
-            document.getElementById('lastBackupTime').textContent = new Date().toLocaleString('it-IT');
-            
-            alert('✅ Backup scaricato! Salvalo su iCloud Drive, Google Drive o OneDrive per sicurezza.');
+            // Salva ora ultimo backup
+            const now = new Date().toISOString();
+            localStorage.setItem('lastBackupTime', now);
+            const el = document.getElementById('lastBackupTime');
+            if (el) el.textContent = new Date(now).toLocaleString('it-IT');
+            return true;
+        }
+
+        function scaricaBackupEApri(servizio) {
+            // Prima scarica il file
+            const ok = scaricaBackup();
+            if (!ok) return;
+            // Poi apre l'app cloud dopo un breve delay
+            setTimeout(() => {
+                let url = '';
+                if (servizio === 'drive') {
+                    url = 'https://drive.google.com';
+                } else if (servizio === 'icloud') {
+                    url = 'https://www.icloud.com/iclouddrive/';
+                } else if (servizio === 'onedrive') {
+                    url = 'https://onedrive.live.com';
+                }
+                if (url) window.open(url, '_blank');
+            }, 800);
         }
         
         function ripristinaBackup(event) {
