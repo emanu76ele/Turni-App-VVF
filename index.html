@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#DC143C">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -63,12 +63,41 @@
             color: var(--text);
             /* Spazio per il banner fisso in basso + gesture bar Android */
             padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px));
+            /* Adatta a tutti gli schermi */
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Rotazione orizzontale */
+        @media (orientation: landscape) and (max-width: 900px) {
+            .container {
+                padding: 10px;
+            }
+            header {
+                padding: 8px 0 !important;
+            }
+            header h1 {
+                font-size: 18px !important;
+            }
+            .header-actions {
+                gap: 6px !important;
+            }
+            .header-actions .btn {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+            .calendar-day {
+                min-height: 60px !important;
+            }
         }
 
         /* Periodo turno card */
