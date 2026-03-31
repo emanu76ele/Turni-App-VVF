@@ -9,7 +9,7 @@
   "display": "standalone",
   "background_color": "#0F0F1E",
   "theme_color": "#DC143C",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "/Turni-App-VVF/icons/icon-72.png",
