@@ -68,7 +68,7 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
 
         /* Periodo turno card */
@@ -169,40 +169,49 @@
         /* Header */
         header {
             background: var(--card);
-            padding: 20px;
+            padding: 10px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .logo-icon {
-            font-size: 32px;
+            font-size: 22px;
         }
 
         .logo-text h1 {
-            font-size: 24px;
+            font-size: 16px;
             color: var(--primary);
         }
 
         .logo-text p {
-            font-size: 12px;
+            font-size: 9px;
             color: var(--text-light);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .header-actions {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        .header-actions .btn {
+            font-size: 11px;
+            padding: 7px 4px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Buttons */
@@ -428,33 +437,35 @@
 
         .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 2px;
             grid-auto-rows: auto;
+            width: 100%;
         }
 
         .calendar-day-header {
             text-align: center;
-            font-size: 12px;
+            font-size: 9px;
             font-weight: 600;
             color: var(--text-light);
-            padding: 8px;
+            padding: 4px 1px;
             text-transform: uppercase;
             grid-column: span 1;
         }
 
         .calendar-day {
-            aspect-ratio: 1;
+            aspect-ratio: unset;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 5px;
+            padding: 3px 2px;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
             background: white;
             display: flex;
             flex-direction: column;
-            min-height: 80px;
+            min-height: 55px;
+            overflow: hidden;
         }
 
         .calendar-day:hover {
@@ -504,35 +515,36 @@
         }
 
         .day-number {
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 1px;
         }
 
         .day-shifts {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            margin-bottom: 4px;
-            font-size: 10px;
+            gap: 1px;
+            margin-bottom: 1px;
+            font-size: 8px;
             font-weight: 600;
         }
 
         .shift-row {
             display: flex;
             justify-content: space-between;
-            padding: 2px 4px;
-            border-radius: 3px;
+            padding: 1px 2px;
+            border-radius: 2px;
             background: #F3F4F6;
         }
 
         .shift-label {
             color: var(--text-light);
-            font-size: 9px;
+            font-size: 7px;
         }
 
         .shift-value {
             color: var(--primary);
+            font-size: 7px;
         }
 
         .day-events {
@@ -783,21 +795,88 @@
         }
 
         @media (max-width: 768px) {
+            /* Container */
+            .container {
+                padding: 6px;
+            }
+
+            /* Header compatto */
+            header {
+                padding: 10px;
+                margin-bottom: 8px;
+                border-radius: 10px;
+            }
+            .logo-icon { font-size: 24px; }
+            .logo-text h1 { font-size: 18px; }
+            .logo-text p { font-size: 10px; letter-spacing: 0.5px; }
+            .header-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 5px;
+            }
+            .header-actions .btn {
+                font-size: 11px;
+                padding: 7px 4px;
+                flex: unset;
+            }
+
+            /* Calendario */
+            .calendar-container {
+                padding: 10px 6px;
+                border-radius: 10px;
+            }
+            .calendar-header {
+                margin-bottom: 10px;
+            }
+            .calendar-title { font-size: 16px; }
+            .nav-btn { width: 30px; height: 30px; font-size: 14px; }
+
             .calendar-grid {
-                gap: 4px;
+                gap: 2px;
             }
-            
+            .calendar-day-header {
+                font-size: 9px;
+                padding: 4px 2px;
+            }
             .calendar-day {
-                padding: 4px;
+                padding: 3px 2px;
+                border-radius: 5px;
+                min-height: 52px;
             }
-            
             .day-number {
-                font-size: 12px;
+                font-size: 11px;
+                margin-bottom: 2px;
             }
-            
-            .event-badge {
+            .shift-row {
                 font-size: 8px;
+                padding: 1px 2px;
             }
+            .shift-label { font-size: 7px; }
+            .shift-value { font-size: 8px; }
+            .event-badge {
+                font-size: 7px;
+                padding: 1px 2px;
+            }
+            .g5-badge { font-size: 7px; padding: 1px 2px; }
+            .day-shifts { gap: 1px; margin-bottom: 2px; }
+
+            /* Detail panel */
+            .detail-panel { padding: 12px; margin-top: 10px; }
+            .detail-date { font-size: 15px; }
+
+            /* Modal */
+            .modal-content {
+                padding: 16px;
+                width: 95%;
+                border-radius: 10px;
+            }
+            .modal-title { font-size: 16px; }
+            .tabs { gap: 2px; overflow-x: auto; }
+            .tab { padding: 8px 10px; font-size: 12px; white-space: nowrap; }
+
+            /* Card */
+            .card { padding: 14px; border-radius: 10px; }
+            .counter-value { font-size: 22px; }
         }
     </style>
 <!-- Google AdMob -->
@@ -2978,7 +3057,7 @@
   <ins class="adsbygoogle"
        style="display:block; width:100%; height:32px;"
        data-ad-client="ca-app-pub-1783170728118774"
-       data-ad-slot="1624374441"
+       data-ad-slot="9030999205"
        data-ad-format="banner"
        data-full-width-responsive="true"></ins>
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
