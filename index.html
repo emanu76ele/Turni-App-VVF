@@ -504,8 +504,9 @@
         }
 
         .calendar-day.today {
-            border: 2px solid var(--primary);
+            border: 3px solid var(--primary) !important;
             background: #FEF2F2;
+            box-shadow: 0 0 0 1px var(--primary);
         }
 
         .calendar-day.selected {
@@ -879,9 +880,6 @@
             .counter-value { font-size: 22px; }
         }
     </style>
-<!-- Google AdMob -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-1783170728118774"
-     crossorigin="anonymous"></script>    
 </head>
 <body>
     <div class="container">
@@ -895,7 +893,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="openSettings()">⚙️ Impostazioni</button>
-                <button class="btn btn-secondary" onclick="openExportModal()">📊 Esporta PDF</button>
+                <button class="btn btn-secondary" onclick="openEsportazioni()">📊 Esportazioni</button>
                 <button class="btn btn-secondary" onclick="openResoconti()">⏳ Resoconti</button>
                 <button class="btn btn-primary" onclick="openModal()">➕ Nuovo Evento</button>
             </div>
@@ -1045,6 +1043,10 @@
                         <option value="Ore Recupero Fatte">Ore Recupero Fatte</option>
                         <option value="Ore Recupero Sottratte">Ore Recupero Sottratte</option>
                         <option value="Ferie">Ferie</option>
+                        <option value="Permesso Sindacale">Permesso Sindacale</option>
+                        <option value="Paternità">Paternità</option>
+                        <option value="Maternità">Maternità</option>
+                        <option value="Donazione Sangue">Donazione Sangue</option>
                         <option value="L104">L104</option>
                         <option value="H18">H18</option>
                         <option value="CS">CS (Capo Squadra)</option>
@@ -1194,7 +1196,7 @@
                 <button class="tab" onclick="switchTab('tariffe-tab')">Tariffe</button>
                 <button class="tab" onclick="switchTab('ferie-tab')">Ferie</button>
                 <button class="tab" onclick="switchTab('recupero-tab')">Recupero</button>
-                <button class="tab" onclick="switchTab('cloud-tab')">Cloud Sync</button>
+                <button class="tab" onclick="switchTab('backup-tab')">💾 Backup</button>
                 <button class="tab" onclick="switchTab('reset-tab')">Reset</button>
             </div>
 
@@ -1332,12 +1334,12 @@
                 <div class="form-group">
                     <label class="form-label">Ferie Anno Corrente</label>
                     <input type="number" class="form-control" id="ferieAnnoCorrente" min="0" value="27">
-                    <small style="color: var(--text-light); font-size: 12px;">Giorni di ferie spettanti quest'anno</small>
+                    <small style="color: var(--text-light); font-size: 12px;">Turni di ferie spettanti quest'anno</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Ferie Residue Anno Precedente</label>
                     <input type="number" class="form-control" id="ferieResiduePrecedente" min="0" value="0">
-                    <small style="color: var(--text-light); font-size: 12px;">Giorni non goduti l'anno scorso</small>
+                    <small style="color: var(--text-light); font-size: 12px;">Turni non goduti l'anno scorso</small>
                 </div>
                 <button class="btn btn-primary" style="width: 100%;" onclick="salvaImpostazioniFerie()">
                     💾 Salva Ferie
@@ -1353,98 +1355,104 @@
                 <button class="btn btn-primary" style="width: 100%;" onclick="salvaImpostazioniRecupero()">
                     💾 Salva Recupero
                 </button>
+
+                <!-- SEZIONE NOTIFICHE -->
+                <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+                    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">🔔 Notifiche Push</div>
+                    
+                    <div id="notif-stato" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:12px;">
+                        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Stato notifiche:</div>
+                        <div id="notif-status-text" style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Controllo in corso...</div>
+                        <button class="btn btn-primary" id="btn-attiva-notifiche" onclick="richiediPermessoNotifiche()" style="width:100%;display:none;">
+                            🔔 Attiva Notifiche
+                        </button>
+                        <button class="btn btn-secondary" id="btn-test-notifica" onclick="testNotifica()" style="width:100%;margin-top:8px;display:none;">
+                            🧪 Invia Notifica di Test
+                        </button>
+                    </div>
+
+                    <div style="padding:10px;background:#FEF9C3;border:1px solid #EAB308;border-radius:8px;font-size:11px;color:#92400E;">
+                        ⚠️ <strong>Su Android:</strong> se le notifiche non funzionano, vai in <strong>Impostazioni telefono → App → Turni VVF → Notifiche</strong> e attivale manualmente.
+                    </div>
+                </div>
             </div>
 
-            <div id="cloud-tab" class="tab-content">
+            <!-- TAB BACKUP UNIFICATO -->
+            <div id="backup-tab" class="tab-content">
+                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">💾 Backup & Ripristino</div>
 
-                <!-- ESPORTA BACKUP -->
-                <div style="margin-bottom:20px;">
-                    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📤 Esporta Backup</div>
+                <!-- BACKUP LOCALE -->
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">💾 Backup Locale</div>
+                    <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il file JSON sul dispositivo.</div>
+                    <button class="btn btn-primary" onclick="scaricaBackup()" style="width:100%;">
+                        ⬇️ Scarica Backup sul Dispositivo
+                    </button>
+                </div>
 
-                    <!-- Backup Locale -->
-                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
-                        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">💾 Backup Locale</div>
-                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il file JSON sul telefono.</div>
-                        <button class="btn btn-primary" onclick="scaricaBackup()" style="width:100%;">
-                            ⬇️ Scarica Backup sul Dispositivo
+                <!-- BACKUP CLOUD -->
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">☁️ Salva su Cloud</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <button class="btn btn-secondary" onclick="scaricaBackupEApri('drive')" style="font-size:13px;">
+                            🔵 Scarica + Apri Google Drive
                         </button>
-                    </div>
-
-                    <!-- Google Drive -->
-                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                            <span style="font-size:18px;">🔵</span>
-                            <span style="font-size:13px;font-weight:600;">Google Drive</span>
-                        </div>
-                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il backup e salvalo su Google Drive manualmente.</div>
-                        <div style="display:flex;gap:8px;">
-                            <button class="btn btn-secondary" onclick="scaricaBackupEApri('drive')" style="flex:1;font-size:13px;">
-                                ⬇️ Scarica + Apri Drive
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- iCloud -->
-                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                            <span style="font-size:18px;">☁️</span>
-                            <span style="font-size:13px;font-weight:600;">iCloud Drive</span>
-                        </div>
-                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il backup e salvalo su iCloud Drive manualmente.</div>
-                        <div style="display:flex;gap:8px;">
-                            <button class="btn btn-secondary" onclick="scaricaBackupEApri('icloud')" style="flex:1;font-size:13px;">
-                                ⬇️ Scarica + Apri iCloud
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- OneDrive -->
-                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                            <span style="font-size:18px;">🔷</span>
-                            <span style="font-size:13px;font-weight:600;">OneDrive</span>
-                        </div>
-                        <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Scarica il backup e salvalo su OneDrive manualmente.</div>
-                        <div style="display:flex;gap:8px;">
-                            <button class="btn btn-secondary" onclick="scaricaBackupEApri('onedrive')" style="flex:1;font-size:13px;">
-                                ⬇️ Scarica + Apri OneDrive
-                            </button>
-                        </div>
+                        <button class="btn btn-secondary" onclick="scaricaBackupEApri('icloud')" style="font-size:13px;">
+                            ☁️ Scarica + Apri iCloud Drive
+                        </button>
+                        <button class="btn btn-secondary" onclick="scaricaBackupEApri('onedrive')" style="font-size:13px;">
+                            🔷 Scarica + Apri OneDrive
+                        </button>
                     </div>
                 </div>
 
-                <!-- IMPORTA BACKUP -->
-                <div style="margin-bottom:20px;">
-                    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📥 Ripristina Backup</div>
-                    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px;">
-                        <div style="font-size:12px;color:#DC2626;margin-bottom:10px;">⚠️ Il ripristino sovrascriverà tutti i dati attuali.</div>
-                        <button class="btn btn-secondary" onclick="document.getElementById('fileRestore').click()" style="width:100%;border-color:#DC2626;color:#DC2626;">
-                            📂 Seleziona File di Backup (.json)
-                        </button>
-                        <input type="file" id="fileRestore" accept=".json" style="display:none;" onchange="ripristinaBackup(event)">
-                        <div style="font-size:12px;color:var(--text-light);margin-top:8px;text-align:center;">
-                            Seleziona il file .json scaricato da Drive, iCloud o OneDrive
-                        </div>
+                <!-- BACKUP AUTOMATICO -->
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:10px;">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">⚙️ Backup Automatico</div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">Frequenza</label>
+                        <select class="form-control" id="backup-frequenza" style="font-size:13px;">
+                            <option value="mai">Disabilitato</option>
+                            <option value="giornaliero">Ogni giorno</option>
+                            <option value="settimanale" selected>Ogni settimana</option>
+                            <option value="mensile">Ogni mese</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">Servizio cloud preferito</label>
+                        <select class="form-control" id="backup-servizio" style="font-size:13px;">
+                            <option value="drive">Google Drive</option>
+                            <option value="onedrive">OneDrive</option>
+                            <option value="icloud">iCloud Drive</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="salvaImpostazioniBackup()" style="width:100%;margin-bottom:10px;">
+                        💾 Salva Impostazioni
+                    </button>
+                    <div style="font-size:12px;color:var(--text-light);">
+                        🕐 Ultimo backup: <strong><span id="ultimo-backup-auto">Mai</span></strong><br>
+                        ⏭️ Prossimo: <strong><span id="prossimo-backup">Non configurato</span></strong>
                     </div>
                 </div>
 
-                <!-- INFO ULTIMO BACKUP -->
+                <!-- RIPRISTINA BACKUP -->
+                <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px;margin-bottom:10px;">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#DC2626;">📥 Ripristina Backup</div>
+                    <div style="font-size:12px;color:#DC2626;margin-bottom:10px;">⚠️ Il ripristino sovrascriverà tutti i dati attuali.</div>
+                    <button class="btn btn-secondary" onclick="document.getElementById('fileRestore').click()" style="width:100%;border-color:#DC2626;color:#DC2626;">
+                        📂 Seleziona File di Backup (.json)
+                    </button>
+                    <input type="file" id="fileRestore" accept=".json" style="display:none;" onchange="ripristinaBackup(event)">
+                </div>
+
+                <!-- STATO -->
                 <div style="padding:10px 12px;background:#F3F4F6;border-radius:8px;font-size:12px;color:var(--text-light);">
-                    🕐 Ultimo backup: <strong><span id="lastBackupTime">Mai</span></strong>
+                    🕐 Ultimo backup manuale: <strong><span id="lastBackupTime">Mai</span></strong>
                 </div>
 
-                <!-- ISTRUZIONI -->
-                <div style="margin-top:14px;padding:12px;background:#DBEAFE;border:1px solid #3B82F6;border-radius:8px;font-size:12px;">
-                    <strong>💡 Come funziona:</strong>
-                    <ol style="margin:6px 0 0 16px;color:var(--text-light);line-height:1.6;">
-                        <li>Clicca "Scarica + Apri Drive/iCloud/OneDrive"</li>
-                        <li>Il file viene salvato nelle Download del telefono</li>
-                        <li>Si apre automaticamente l'app cloud selezionata</li>
-                        <li>Carica il file nella tua cartella cloud</li>
-                        <li>Per ripristinare: scarica il file dal cloud e usa "Seleziona File di Backup"</li>
-                    </ol>
+                <div style="margin-top:10px;padding:10px;background:#DBEAFE;border-radius:8px;font-size:11px;color:#1E40AF;">
+                    💡 <strong>Come funziona:</strong> Scarica il file, poi aprilo nella tua app cloud preferita per caricarlo. Per ripristinare, scarica il file dal cloud e selezionalo.
                 </div>
-
             </div>
 
             <div id="reset-tab" class="tab-content">
@@ -1458,40 +1466,97 @@
         </div>
     </div>
 
-    <!-- Modal Esportazione -->
+    <!-- Modal Esportazioni -->
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Esporta Report PDF</h2>
+                <h2 class="modal-title">📊 Esportazioni</h2>
                 <button class="modal-close" onclick="closeExportModal()">×</button>
             </div>
-            
-            <div class="form-group">
-                <label class="form-label">Periodo</label>
-                <select class="form-control" id="exportPeriod" onchange="updateExportDates()">
-                    <option value="month">Mese Corrente</option>
-                    <option value="custom">Periodo Personalizzato</option>
-                    <option value="year">Anno Corrente</option>
-                    <option value="all">Tutti gli Eventi</option>
-                </select>
+
+            <!-- Tab selector -->
+            <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+                <button id="tab-pdf-btn" onclick="switchExportTab('pdf')" style="flex:1;padding:10px;background:var(--primary);color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;">
+                    📄 Esporta PDF
+                </button>
+                <button id="tab-cal-btn" onclick="switchExportTab('cal')" style="flex:1;padding:10px;background:white;color:var(--text);border:none;font-size:13px;font-weight:600;cursor:pointer;">
+                    📅 Esporta Calendario
+                </button>
             </div>
-            
-            <div id="customDateFields" style="display: none;">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Data Inizio</label>
-                        <input type="date" class="form-control" id="exportDateStart">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Data Fine</label>
-                        <input type="date" class="form-control" id="exportDateEnd">
+
+            <!-- TAB PDF -->
+            <div id="export-tab-pdf">
+                <div class="form-group">
+                    <label class="form-label">Periodo</label>
+                    <select class="form-control" id="exportPeriod" onchange="updateExportDates()">
+                        <option value="month">Mese Corrente</option>
+                        <option value="custom">Periodo Personalizzato</option>
+                        <option value="year">Anno Corrente</option>
+                        <option value="all">Tutti gli Eventi</option>
+                    </select>
+                </div>
+                <div id="customDateFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Data Inizio</label>
+                            <input type="date" class="form-control" id="exportDateStart">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Data Fine</label>
+                            <input type="date" class="form-control" id="exportDateEnd">
+                        </div>
                     </div>
                 </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="esportaPDF()">
+                    📄 Genera PDF
+                </button>
             </div>
-            
-            <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="esportaPDF()">
-                📄 Genera PDF
-            </button>
+
+            <!-- TAB CALENDARIO -->
+            <div id="export-tab-cal" style="display:none;">
+                <p style="font-size:12px;color:var(--text-light);margin-bottom:12px;">
+                    Genera un file .ics per Google Calendar e Calendario iOS.
+                </p>
+                <!-- Selezione tipi di eventi -->
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;margin-bottom:12px;">
+                    <div style="font-size:12px;font-weight:600;margin-bottom:8px;">Seleziona cosa esportare:</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-straordinari" checked> Straordinari</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-ferie" checked> Ferie</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-vigilanza" checked> Vigilanza</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-missioni" checked> Missioni</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-corsi" checked> Corsi</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-l104" checked> L104/H18</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-permessi" checked> Permessi/Congedi</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="cal-donazione" checked> Donazione Sangue</label>
+                    </div>
+                </div>
+                <!-- Periodo -->
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;margin-bottom:12px;">
+                    <select class="form-control" id="cal-periodo" onchange="aggiornaCalPeriodo()" style="font-size:13px;margin-bottom:8px;">
+                        <option value="mese">Mese corrente</option>
+                        <option value="anno">Anno corrente</option>
+                        <option value="tutto">Tutti gli eventi</option>
+                        <option value="custom">Periodo personalizzato</option>
+                    </select>
+                    <div id="cal-date-custom" style="display:none;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                            <div><label style="font-size:11px;color:var(--text-light);">Dal</label><input type="date" class="form-control" id="cal-data-inizio" style="font-size:12px;"></div>
+                            <div><label style="font-size:11px;color:var(--text-light);">Al</label><input type="date" class="form-control" id="cal-data-fine" style="font-size:12px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="esportaICS()" style="width:100%;margin-bottom:8px;">
+                    📥 Scarica file .ics
+                </button>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <button class="btn btn-secondary" onclick="apriGoogleCalendar()" style="font-size:12px;">🔵 Google Calendar</button>
+                    <button class="btn btn-secondary" onclick="apriCalendarioIOS()" style="font-size:12px;">🍎 Calendario iOS</button>
+                </div>
+                <div style="margin-top:10px;padding:8px;background:#DBEAFE;border-radius:6px;font-size:11px;color:#1E40AF;">
+                    💡 Scarica il file .ics e aprilo per importare gli eventi nel calendario.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1537,7 +1602,75 @@
             updateCounters();
             loadSettings();
             riprogrammaNotificheAlAvvio();
+            avviaBackupAutomatico();
+            aggiornaStatoBackup();
+            aggiornaStatoNotifiche();
+            // Delay AdMob per dare tempo alla vista di caricarsi completamente
+            setTimeout(() => inizializzaAdMob(), 3000);
         });
+
+        // ========== ADMOB NATIVO ==========
+        async function inizializzaAdMob() {
+            try {
+                if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
+                    console.log('AdMob: ambiente non nativo, skip');
+                    return;
+                }
+                await avviaBannerNativo();
+            } catch (err) {
+                console.log('AdMob init error:', err);
+            }
+        }
+
+        async function avviaBannerNativo() {
+            try {
+                const AdMob = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob;
+                if (!AdMob) {
+                    console.log('Plugin AdMob non trovato');
+                    return;
+                }
+                // Inizializza prima
+                try {
+                    await AdMob.initialize({ initializeForTesting: false });
+                } catch(e) {
+                    console.log('AdMob.initialize warning:', e);
+                }
+                // Aspetta ancora dopo initialize
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await mostraBannerNativo(AdMob);
+            } catch (err) {
+                console.log('Banner nativo error:', err);
+            }
+        }
+
+        async function mostraBannerNativo(AdMob) {
+            try {
+                const options = {
+                    adId: 'ca-app-pub-1783170728118774/9030999205',
+                    adSize: 'BANNER',
+                    position: 'BOTTOM_CENTER',
+                    margin: 0,
+                    isTesting: false,
+                };
+                await AdMob.showBanner(options);
+                console.log('✅ Banner AdMob mostrato con successo');
+            } catch (err) {
+                console.log('Errore showBanner, riprovo tra 2s:', err);
+                // Riprova dopo 2 secondi
+                setTimeout(async () => {
+                    try {
+                        const AdMob2 = window.Capacitor.Plugins.AdMob;
+                        if (AdMob2) await AdMob2.showBanner({
+                            adId: 'ca-app-pub-1783170728118774/9030999205',
+                            adSize: 'BANNER',
+                            position: 'BOTTOM_CENTER',
+                            margin: 0,
+                            isTesting: false,
+                        });
+                    } catch(e) { console.log('Retry banner error:', e); }
+                }, 2000);
+            }
+        }
 
         // Funzione per calcolare i turni
         /**
@@ -1788,7 +1921,7 @@
                         <span class="shift-value">${shifts.night}</span>
                     </div>
                     <div class="shift-row">
-                        <span class="g5-badge">G5 ${isVenerdi ? '08:30-12:30' : '08:30-17:30'}</span>
+                        <span class="g5-badge">G5</span>
                     </div>
                 `;
             } else if (mioTurno === 'G5' && !otherMonth && isFestivitaItaliana(date)) {
@@ -1908,17 +2041,24 @@
                 eventsList.innerHTML = dayEvents.map(event => {
                     const statusClass = event.pagato ? 'pagato' : (event.inviato ? 'inviato' : '');
                     
-                    // Format ore in HH:mm for L104 and H18
                     const isQualifica = ['CS', 'Autista', 'CS Autista', 'Responsabile SO', 'Sala Operativa',
                         'Prima', 'Seconda', '1 Appoggio', '2 Appoggio', 'SAPR', 'TAS'].includes(event.tipo);
                     const isPasto = event.tipo === 'Buono Pasto' || event.tipo === 'Mancato Pasto';
                     const isCorso = event.tipo === 'Corso';
+                    const isFerie = event.tipo === 'Ferie';
+                    const isDonazione = event.tipo === 'Donazione Sangue';
                     // Voci che usano formato HH:mm (ore decimali → ore:minuti)
                     const isOreMinuti = ['L104', 'H18', 'Ore Guida', 'Missione Soccorso',
-                        'Missione Ordinario', 'Missione Sostituzione'].includes(event.tipo);
+                        'Missione Ordinario', 'Missione Sostituzione', 'Permesso Sindacale',
+                        'Paternità', 'Maternità'].includes(event.tipo);
                     let oreDisplay = '';
                     if (isQualifica) {
                         oreDisplay = `${event.quantita || 1} turno${(event.quantita || 1) > 1 ? 'i' : ''}`;
+                    } else if (isFerie) {
+                        const n = event.quantita || 1;
+                        oreDisplay = `${n} turno${n > 1 ? 'i' : ''}`;
+                    } else if (isDonazione) {
+                        oreDisplay = '1 turno';
                     } else if (isPasto) {
                         const n = event.quantita || event.ore || 1;
                         oreDisplay = `${n} ${n === 1 ? 'buono' : 'buoni'}`;
@@ -1939,22 +2079,24 @@
                     let timeDisplay = '';
                     if (event.oraInizio && event.oraFine) {
                         timeDisplay = `${event.oraInizio} - ${event.oraFine}`;
-                        // Mostra split diurno/notturno per Vigilanza e Straordinari
                         if ((event.tipo === 'Vigilanza' || event.tipo.includes('Straordinario')) &&
                             (event.oreDiurne > 0 || event.oreNotturne > 0)) {
                             timeDisplay += ` <small style="color:var(--text-light)">(☀️ ${event.oreDiurne.toFixed(2)}h diurno / 🌙 ${event.oreNotturne.toFixed(2)}h notturno)</small>`;
                         }
                     } else if (event.quantita) {
-                        if (event.tipo === 'L104' || event.tipo === 'H18') {
+                        if (event.tipo === 'L104' || event.tipo === 'H18' || event.tipo === 'Permesso Sindacale' || event.tipo === 'Paternità' || event.tipo === 'Maternità') {
                             const ore = Math.floor(event.quantita);
                             const minuti = Math.round((event.quantita - ore) * 60);
-                            timeDisplay = `${ore}:${minuti.toString().padStart(2, '0')}`;
+                            timeDisplay = `${ore}h ${minuti.toString().padStart(2, '0')}min`;
                         } else if (event.tipo === 'Buono Pasto' || event.tipo === 'Mancato Pasto') {
                             timeDisplay = `${event.quantita} ${event.quantita === 1 ? 'buono' : 'buoni'}`;
                         } else if (event.tipo === 'Corso') {
                             timeDisplay = `${event.quantita} corso${event.quantita > 1 ? 'i' : ''}`;
                         } else if (event.tipo === 'Ferie') {
-                            timeDisplay = `${event.quantita} giorni`;
+                            const n = event.quantita;
+                            timeDisplay = `${n} turno${n > 1 ? 'i' : ''}`;
+                        } else if (event.tipo === 'Donazione Sangue') {
+                            timeDisplay = '1 turno';
                         } else {
                             timeDisplay = `${event.quantita} ore`;
                         }
@@ -1987,7 +2129,10 @@
                                     <label for="pagato-${event.id}">Pagato</label>
                                 </div>
                             </div>
-                            <button class="delete-event" onclick="deleteEvent(${event.id})">Elimina</button>
+                            <div style="display:flex;flex-direction:column;gap:4px;">
+                                <button style="background:#DBEAFE;color:#1D4ED8;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;" onclick="editEvent(${event.id})">✏️ Modifica</button>
+                                <button class="delete-event" onclick="deleteEvent(${event.id})">Elimina</button>
+                            </div>
                         </div>
                     </div>
                 `;}).join('');
@@ -2050,7 +2195,7 @@
             const ferieResidue = ferieTotali - ferieUsate;
             
             document.getElementById('ferieResidue').textContent = ferieResidue;
-            document.getElementById('ferieTotali').textContent = `su ${ferieTotali} giorni`;
+            document.getElementById('ferieTotali').textContent = `su ${ferieTotali} turni`;
             document.getElementById('ferieProgress').style.width = `${(ferieResidue / ferieTotali) * 100}%`;
             
             // L104 (18 ore mensili)
@@ -2122,23 +2267,77 @@
             }
         }
 
-        function openModal() {
-            document.getElementById('eventModal').classList.add('active');
-            if (selectedDate) {
-                document.getElementById('dataEvento').value = selectedDate;
+        let editingEventId = null;
+
+        function openModal(eventId = null) {
+            editingEventId = eventId;
+            const modal = document.getElementById('eventModal');
+            const title = modal.querySelector('.modal-title');
+
+            if (eventId) {
+                // Modalità modifica
+                const ev = events.find(e => e.id === eventId);
+                if (!ev) return;
+                title.textContent = '✏️ Modifica Evento';
+                document.getElementById('dataEvento').value = ev.data;
+                document.getElementById('tipoServizio').value = ev.tipo;
+                updateFormFields();
+
+                // Popola i campi in base al tipo
+                if (ev.oraInizio) document.getElementById('oraInizio').value = ev.oraInizio;
+                if (ev.oraFine) document.getElementById('oraFine').value = ev.oraFine;
+                if (ev.quantita) document.getElementById('quantita').value = ev.quantita;
+                if (ev.note) document.getElementById('noteEvento').value = ev.note;
+
+                // Ore e minuti per tipi speciali
+                if (['L104', 'H18', 'Permesso Sindacale', 'Paternità', 'Maternità'].includes(ev.tipo) && ev.ore) {
+                    const oreIntere = Math.floor(ev.ore);
+                    const minuti = Math.round((ev.ore - oreIntere) * 60);
+                    document.getElementById('l104h18Ore').value = oreIntere;
+                    document.getElementById('l104h18Minuti').value = minuti;
+                }
+
+                // Notifiche
+                if (ev.notifiche && ev.notifiche.length > 0) {
+                    if (ev.notifiche[0]) {
+                        document.getElementById('notif1Enabled').checked = true;
+                        document.getElementById('notif1Time').disabled = false;
+                        document.getElementById('notif1Time').value = ev.notifiche[0].minutiPrima;
+                    }
+                    if (ev.notifiche[1]) {
+                        document.getElementById('notif2Enabled').checked = true;
+                        document.getElementById('notif2Time').disabled = false;
+                        document.getElementById('notif2Time').value = ev.notifiche[1].minutiPrima;
+                    }
+                }
             } else {
-                document.getElementById('dataEvento').value = new Date().toISOString().split('T')[0];
+                // Modalità nuovo
+                title.textContent = 'Nuovo Evento';
+                editingEventId = null;
+                if (selectedDate) {
+                    document.getElementById('dataEvento').value = selectedDate;
+                } else {
+                    document.getElementById('dataEvento').value = new Date().toISOString().split('T')[0];
+                }
             }
+
+            modal.classList.add('active');
+
             // Mostra pulsante permesso notifiche se non ancora concesso
             const permBtn = document.getElementById('notifPermBtn');
-            if ('Notification' in window && Notification.permission === 'default') {
+            if ('Notification' in window && Notification.permission !== 'granted') {
                 permBtn.style.display = 'inline-block';
             } else {
                 permBtn.style.display = 'none';
             }
         }
 
+        function editEvent(eventId) {
+            openModal(eventId);
+        }
+
         function closeModal() {
+            editingEventId = null;
             document.getElementById('eventModal').classList.remove('active');
             document.getElementById('eventForm').reset();
             document.getElementById('timeFields').style.display = 'none';
@@ -2146,6 +2345,8 @@
             document.getElementById('l104h18Fields').style.display = 'none';
             document.getElementById('turnoTypeField').style.display = 'none';
             document.getElementById('corsoPeriodoFields').style.display = 'none';
+            const title = document.querySelector('#eventModal .modal-title');
+            if (title) title.textContent = 'Nuovo Evento';
         }
 
         function updateFormFields() {
@@ -2162,8 +2363,8 @@
             turnoTypeField.style.display = 'none';
             document.getElementById('corsoPeriodoFields').style.display = 'none';
             
-            // L104 e H18 - ore e minuti separati
-            if (tipo === 'L104' || tipo === 'H18') {
+            // L104, H18, Permesso Sindacale, Paternità, Maternità - ore e minuti separati
+            if (tipo === 'L104' || tipo === 'H18' || tipo === 'Permesso Sindacale' || tipo === 'Paternità' || tipo === 'Maternità') {
                 l104h18Fields.style.display = 'block';
                 document.getElementById('l104h18Ore').value = 0;
                 document.getElementById('l104h18Minuti').value = 0;
@@ -2176,15 +2377,25 @@
                      tipo === 'SAPR' || tipo === 'TAS') {
                 // Nessun campo aggiuntivo
             }
-            // Ferie - quantità giorni
+            // Donazione Sangue - marca 1 turno automaticamente
+            else if (tipo === 'Donazione Sangue') {
+                // Nessun campo aggiuntivo - marca 1 turno automaticamente
+            }
+            // Ferie - quantità turni
             else if (tipo === 'Ferie') {
                 quantitaField.style.display = 'block';
                 document.getElementById('quantita').value = 1;
+                document.getElementById('quantita').step = '1';
+                document.getElementById('quantita').min = '1';
+                const qLabel = document.querySelector('#quantitaField .form-label');
+                if (qLabel) qLabel.textContent = 'Numero Turni';
             }
             // Buono Pasto, Mancato Pasto, Corso - importo fisso/quantità
             else if (tipo === 'Buono Pasto' || tipo === 'Mancato Pasto' || tipo === 'Corso') {
                 quantitaField.style.display = 'block';
                 document.getElementById('quantita').value = 1;
+                document.getElementById('quantita').step = '1';
+                document.getElementById('quantita').min = '0.5';
                 const qLabel = document.querySelector('#quantitaField .form-label');
                 if (qLabel) qLabel.textContent = tipo === 'Corso' ? 'Numero Corsi' : 'Quantità (giorni/ore)';
                 if (tipo === 'Corso') {
@@ -2194,6 +2405,8 @@
             // Tutto il resto - ore inizio/fine
             else if (tipo) {
                 timeFields.style.display = 'grid';
+                document.getElementById('quantita').step = '0.5';
+                document.getElementById('quantita').min = '0.5';
                 const qLabel = document.querySelector('#quantitaField .form-label');
                 if (qLabel) qLabel.textContent = 'Quantità (giorni/ore)';
             }
@@ -2262,8 +2475,8 @@
             const isQualifica = ['CS', 'Autista', 'CS Autista', 'Responsabile SO', 'Sala Operativa',
                 'Prima', 'Seconda', '1 Appoggio', '2 Appoggio', 'SAPR', 'TAS'].includes(tipo);
 
-            // L104 e H18 - calcola ore da ore e minuti
-            if (tipo === 'L104' || tipo === 'H18') {
+            // L104, H18, Permesso Sindacale, Paternità, Maternità - calcola ore da ore e minuti
+            if (tipo === 'L104' || tipo === 'H18' || tipo === 'Permesso Sindacale' || tipo === 'Paternità' || tipo === 'Maternità') {
                 const oreInput = parseInt(document.getElementById('l104h18Ore').value) || 0;
                 const minutiInput = parseInt(document.getElementById('l104h18Minuti').value) || 0;
                 ore = oreInput + (minutiInput / 60);
@@ -2273,7 +2486,11 @@
                 ore = 0;
                 compenso = 0;
             }
-            // Ferie - quantità giorni
+            // Donazione Sangue - 1 turno fisso
+            else if (tipo === 'Donazione Sangue') {
+                ore = 1;
+            }
+            // Ferie - quantità turni
             else if (tipo === 'Ferie') {
                 ore = quantita;
             }
@@ -2351,10 +2568,10 @@
                 reader.readAsDataURL(file);
             } else {
                 const newEvent = {
-                    id: Date.now(), tipo, data,
+                    id: editingEventId || Date.now(), tipo, data,
                     oraInizio: isQualifica ? null : oraInizio,
                     oraFine: isQualifica ? null : oraFine,
-                    quantita: isQualifica ? 1 : (tipo === 'L104' || tipo === 'H18' ? ore : quantita),
+                    quantita: isQualifica ? 1 : (['L104', 'H18', 'Permesso Sindacale', 'Paternità', 'Maternità'].includes(tipo) ? ore : quantita),
                     ore: isQualifica ? 0 : (ore > 0 ? ore : quantita),
                     oreDiurne, oreNotturne,
                     compenso: isQualifica ? 0 : compenso,
@@ -2362,14 +2579,79 @@
                     corsoDataInizio: tipo === 'Corso' ? corsoDataInizio : '',
                     corsoDataFine: tipo === 'Corso' ? corsoDataFine : ''
                 };
-                saveEventToStorage(newEvent);
+                if (editingEventId) {
+                    // Modifica evento esistente
+                    const idx = events.findIndex(e => e.id === editingEventId);
+                    if (idx !== -1) {
+                        newEvent.inviato = events[idx].inviato;
+                        newEvent.pagato = events[idx].pagato;
+                        newEvent.pdf = events[idx].pdf;
+                        newEvent.pdfName = events[idx].pdfName;
+                        events[idx] = newEvent;
+                        localStorage.setItem('vvfEvents', JSON.stringify(events));
+                        closeModal();
+                        renderCalendar();
+                        updateCounters();
+                        if (selectedDate) showDayDetails(selectedDate);
+                    }
+                } else {
+                    saveEventToStorage(newEvent);
+                }
             }
         }
         
         function saveEventToStorage(event) {
-            // Add status fields
-            event.inviato = false;
-            event.pagato = false;
+            // Preserva stato inviato/pagato se non è una modifica
+            if (!event.inviato) event.inviato = false;
+            if (!event.pagato) event.pagato = false;
+            
+            // Se sono Ferie con più turni, crea un evento per ogni turno di servizio successivo
+            const numTurniFerie = parseInt(event.quantita) || 1;
+            if (event.tipo === 'Ferie' && numTurniFerie > 1) {
+                const periodoAttivo = getPeriodoPerData(event.data);
+                const mioTurno = periodoAttivo ? periodoAttivo.turno : (settings.mioTurno || '');
+                const mioSalto = periodoAttivo ? periodoAttivo.salto : (settings.mioSalto || '');
+                
+                if (mioTurno && mioTurno !== 'G5' && mioTurno !== '24/72') {
+                    let turniTrovati = 0;
+                    let dataCorrente = new Date(event.data + 'T12:00:00');
+                    const eventiDaAggiungere = [];
+                    
+                    // Primo turno è già sulla data inserita
+                    turniTrovati = 1;
+                    eventiDaAggiungere.push({...event, id: Date.now(), quantita: 1, ore: 1});
+                    
+                    // Trova i turni successivi
+                    let giorniScorsi = 0;
+                    while (turniTrovati < numTurniFerie && giorniScorsi < 200) {
+                        dataCorrente.setDate(dataCorrente.getDate() + 1);
+                        giorniScorsi++;
+                        const dataStr = dataCorrente.toISOString().split('T')[0];
+                        const shifts = getShiftForDate(dataCorrente);
+                        const userShift = mioTurno + mioSalto;
+                        if (shifts.day === userShift || shifts.night === userShift) {
+                            turniTrovati++;
+                            eventiDaAggiungere.push({
+                                ...event,
+                                id: Date.now() + turniTrovati * 100,
+                                data: dataStr,
+                                quantita: 1,
+                                ore: 1,
+                                inviato: false,
+                                pagato: false
+                            });
+                        }
+                    }
+                    
+                    eventiDaAggiungere.forEach(ev => events.push(ev));
+                    localStorage.setItem('vvfEvents', JSON.stringify(events));
+                    closeModal();
+                    renderCalendar();
+                    updateCounters();
+                    if (selectedDate) showDayDetails(selectedDate);
+                    return;
+                }
+            }
             
             events.push(event);
             localStorage.setItem('vvfEvents', JSON.stringify(events));
@@ -2377,6 +2659,8 @@
             // Programma notifiche push
             if (event.notifiche && event.notifiche.length > 0) {
                 programmaNotifiche(event);
+                // Salva notifiche nel service worker per funzionare con app chiusa
+                salvaNotifichePerServiceWorker(event);
             }
             
             // Se è un Corso con date → crea automaticamente periodo G5
@@ -2391,6 +2675,29 @@
             if (selectedDate === event.data) {
                 showDayDetails(event.data);
             }
+        }
+        
+        function salvaNotifichePerServiceWorker(evento) {
+            if (!('serviceWorker' in navigator)) return;
+            navigator.serviceWorker.ready.then(registration => {
+                const notificheData = JSON.parse(localStorage.getItem('vvfNotifiche') || '[]');
+                const dataEvento = new Date(evento.data + 'T' + (evento.oraInizio || '08:00') + ':00');
+                evento.notifiche.forEach((notif, idx) => {
+                    const tempoNotifica = dataEvento.getTime() - (notif.minutiPrima * 60 * 1000);
+                    if (tempoNotifica > Date.now()) {
+                        notificheData.push({
+                            id: `${evento.id}-${idx}`,
+                            eventoId: evento.id,
+                            tipo: evento.tipo,
+                            data: evento.data,
+                            oraInizio: evento.oraInizio,
+                            minutiPrima: notif.minutiPrima,
+                            tempoNotifica
+                        });
+                    }
+                });
+                localStorage.setItem('vvfNotifiche', JSON.stringify(notificheData));
+            });
         }
 
         function deleteEvent(id) {
@@ -2687,6 +2994,38 @@
             document.getElementById('exportModal').classList.remove('active');
         }
 
+        function openEsportazioni() {
+            document.getElementById('exportModal').classList.add('active');
+            updateExportDates();
+            switchExportTab('pdf');
+        }
+
+        function openExportModal() {
+            openEsportazioni();
+        }
+
+        function switchExportTab(tab) {
+            const pdfTab = document.getElementById('export-tab-pdf');
+            const calTab = document.getElementById('export-tab-cal');
+            const pdfBtn = document.getElementById('tab-pdf-btn');
+            const calBtn = document.getElementById('tab-cal-btn');
+            if (tab === 'pdf') {
+                pdfTab.style.display = 'block';
+                calTab.style.display = 'none';
+                pdfBtn.style.background = 'var(--primary)';
+                pdfBtn.style.color = 'white';
+                calBtn.style.background = 'white';
+                calBtn.style.color = 'var(--text)';
+            } else {
+                pdfTab.style.display = 'none';
+                calTab.style.display = 'block';
+                calBtn.style.background = 'var(--primary)';
+                calBtn.style.color = 'white';
+                pdfBtn.style.background = 'white';
+                pdfBtn.style.color = 'var(--text)';
+            }
+        }
+
         function updateExportDates() {
             const period = document.getElementById('exportPeriod').value;
             const customFields = document.getElementById('customDateFields');
@@ -2916,21 +3255,72 @@
 
         // ========== NOTIFICHE PUSH ==========
         
+        function aggiornaStatoNotifiche() {
+            const statusText = document.getElementById('notif-status-text');
+            const btnAttiva = document.getElementById('btn-attiva-notifiche');
+            const btnTest = document.getElementById('btn-test-notifica');
+            if (!statusText) return;
+
+            if (!('Notification' in window)) {
+                statusText.textContent = '❌ Notifiche non supportate in questo browser/app.';
+                statusText.style.color = '#DC2626';
+                return;
+            }
+
+            const perm = Notification.permission;
+            if (perm === 'granted') {
+                statusText.textContent = '✅ Notifiche attive!';
+                statusText.style.color = '#059669';
+                if (btnAttiva) btnAttiva.style.display = 'none';
+                if (btnTest) btnTest.style.display = 'block';
+            } else if (perm === 'denied') {
+                statusText.innerHTML = '❌ Notifiche bloccate. Vai in <strong>Impostazioni telefono → App → Turni VVF → Notifiche</strong> e attivale.';
+                statusText.style.color = '#DC2626';
+                if (btnAttiva) btnAttiva.style.display = 'none';
+                if (btnTest) btnTest.style.display = 'none';
+            } else {
+                statusText.textContent = '⚠️ Notifiche non ancora attivate. Clicca il pulsante qui sotto.';
+                statusText.style.color = '#D97706';
+                if (btnAttiva) btnAttiva.style.display = 'block';
+                if (btnTest) btnTest.style.display = 'none';
+            }
+        }
+
         function richiediPermessoNotifiche() {
             if (!('Notification' in window)) {
-                alert('Questo browser non supporta le notifiche push.');
+                alert('Le notifiche non sono supportate in questa app.\n\nSu Android, vai in Impostazioni → App → Turni VVF → Notifiche e attivale manualmente.');
                 return;
             }
             Notification.requestPermission().then(permission => {
-                if (permission === 'granted') {
-                    document.getElementById('notifPermBtn').style.display = 'none';
-                    new Notification('🚒 Turni VVF', {
-                        body: 'Notifiche attivate! Riceverai avvisi per i tuoi eventi.',
-                        icon: 'icons/icon-192.png'
-                    });
-                } else {
-                    alert('Permesso notifiche negato. Attivale dalle impostazioni del browser.');
+                aggiornaStatoNotifiche();
+                // Aggiorna anche il pulsante nel modal
+                const permBtn = document.getElementById('notifPermBtn');
+                if (permBtn) {
+                    permBtn.style.display = permission === 'granted' ? 'none' : 'inline-block';
                 }
+                if (permission === 'granted') {
+                    setTimeout(() => {
+                        new Notification('🚒 Turni VVF', {
+                            body: 'Notifiche attivate! Riceverai avvisi per i tuoi eventi.',
+                            icon: 'icons/icon-192.png'
+                        });
+                    }, 500);
+                } else if (permission === 'denied') {
+                    alert('Notifiche bloccate dal sistema.\n\nPer attivarle:\n1. Vai in Impostazioni del telefono\n2. App → Turni VVF\n3. Notifiche → Attiva');
+                }
+            });
+        }
+
+        function testNotifica() {
+            if (Notification.permission !== 'granted') {
+                alert('Attiva prima le notifiche!');
+                return;
+            }
+            new Notification('🚒 Turni VVF - Test', {
+                body: 'Le notifiche funzionano correttamente! ✅',
+                icon: 'icons/icon-192.png',
+                badge: 'icons/icon-72.png',
+                vibrate: [200, 100, 200]
             });
         }
 
@@ -2975,13 +3365,37 @@
         function riprogrammaNotificheAlAvvio() {
             if (!('Notification' in window) || Notification.permission !== 'granted') return;
             const ora = Date.now();
+            const notificheFuture = [];
             events.forEach(ev => {
                 if (!ev.notifiche || ev.notifiche.length === 0) return;
                 const dataEv = new Date(ev.data + 'T' + (ev.oraInizio || '08:00') + ':00');
                 if (dataEv.getTime() > ora) {
                     programmaNotifiche(ev);
+                    // Prepara dati per service worker
+                    ev.notifiche.forEach((notif, idx) => {
+                        const tempoNotifica = dataEv.getTime() - (notif.minutiPrima * 60 * 1000);
+                        if (tempoNotifica > ora) {
+                            notificheFuture.push({
+                                id: `${ev.id}-${idx}`,
+                                tipo: ev.tipo,
+                                data: ev.data,
+                                oraInizio: ev.oraInizio,
+                                minutiPrima: notif.minutiPrima,
+                                tempoNotifica
+                            });
+                        }
+                    });
                 }
             });
+            // Invia al service worker per notifiche con app chiusa
+            if ('serviceWorker' in navigator && notificheFuture.length > 0) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.active && registration.active.postMessage({
+                        type: 'SCHEDULE_NOTIFICATION',
+                        notifiche: notificheFuture
+                    });
+                });
+            }
         }
         
         // Service Worker Registration for PWA
@@ -3034,6 +3448,250 @@
                 });
             }
         }
+
+        // ========== MODIFICA 6 — ESPORTA CALENDARIO ICS ==========
+
+        function aggiornaCalPeriodo() {
+            const periodo = document.getElementById('cal-periodo').value;
+            const customDiv = document.getElementById('cal-date-custom');
+            customDiv.style.display = periodo === 'custom' ? 'block' : 'none';
+        }
+
+        function getEventiPerCalendario() {
+            const oggi = new Date();
+            let startDate, endDate;
+            const periodo = document.getElementById('cal-periodo').value;
+
+            if (periodo === 'mese') {
+                startDate = new Date(oggi.getFullYear(), oggi.getMonth(), 1);
+                endDate = new Date(oggi.getFullYear(), oggi.getMonth() + 1, 0);
+            } else if (periodo === 'anno') {
+                startDate = new Date(oggi.getFullYear(), 0, 1);
+                endDate = new Date(oggi.getFullYear(), 11, 31);
+            } else if (periodo === 'custom') {
+                startDate = new Date(document.getElementById('cal-data-inizio').value);
+                endDate = new Date(document.getElementById('cal-data-fine').value);
+            } else {
+                startDate = new Date(0);
+                endDate = new Date(2099, 11, 31);
+            }
+
+            const includiStraordinari = document.getElementById('cal-straordinari').checked;
+            const includiFerie = document.getElementById('cal-ferie').checked;
+            const includiVigilanza = document.getElementById('cal-vigilanza').checked;
+            const includiMissioni = document.getElementById('cal-missioni').checked;
+            const includiCorsi = document.getElementById('cal-corsi').checked;
+            const includiL104 = document.getElementById('cal-l104').checked;
+            const includiPermessi = document.getElementById('cal-permessi').checked;
+            const includiDonazione = document.getElementById('cal-donazione').checked;
+
+            return events.filter(ev => {
+                const dataEv = new Date(ev.data);
+                if (dataEv < startDate || dataEv > endDate) return false;
+
+                if (ev.tipo.includes('Straordinario')) return includiStraordinari;
+                if (ev.tipo === 'Ferie') return includiFerie;
+                if (ev.tipo === 'Vigilanza') return includiVigilanza;
+                if (ev.tipo.includes('Missione')) return includiMissioni;
+                if (ev.tipo === 'Corso') return includiCorsi;
+                if (ev.tipo === 'L104' || ev.tipo === 'H18') return includiL104;
+                if (['Permesso Sindacale', 'Paternità', 'Maternità'].includes(ev.tipo)) return includiPermessi;
+                if (ev.tipo === 'Donazione Sangue') return includiDonazione;
+                return true;
+            });
+        }
+
+        function formatDataICS(dataStr, oraStr) {
+            const d = new Date(dataStr + 'T' + (oraStr || '08:00') + ':00');
+            return d.toISOString().replace(/[-:]/g, '').replace('.000', '');
+        }
+
+        function generaUID() {
+            return Math.random().toString(36).substr(2, 9) + '@turnivvf';
+        }
+
+        function esportaICS() {
+            const eventiDaEsportare = getEventiPerCalendario();
+
+            if (eventiDaEsportare.length === 0) {
+                alert('Nessun evento trovato nel periodo selezionato con i filtri applicati.');
+                return;
+            }
+
+            let ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Turni VVF//IT',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'X-WR-CALNAME:Turni VVF',
+                'X-WR-TIMEZONE:Europe/Rome'
+            ];
+
+            eventiDaEsportare.forEach(ev => {
+                const oraInizio = ev.oraInizio || '08:00';
+                const oraFine = ev.oraFine || (ev.oraInizio ? ev.oraInizio : '20:00');
+                const dtStart = formatDataICS(ev.data, oraInizio);
+                const dtEnd = formatDataICS(ev.data, oraFine);
+                const dtStamp = new Date().toISOString().replace(/[-:]/g, '').replace('.000', '');
+
+                let descrizione = '';
+                if (ev.ore) descrizione += `Ore: ${ev.ore.toFixed(2)}`;
+                if (ev.compenso) descrizione += ` | Compenso: €${ev.compenso.toFixed(2)}`;
+                if (ev.note) descrizione += ` | Note: ${ev.note}`;
+
+                ics.push('BEGIN:VEVENT');
+                ics.push(`UID:${generaUID()}`);
+                ics.push(`DTSTAMP:${dtStamp}`);
+                ics.push(`DTSTART:${dtStart}`);
+                ics.push(`DTEND:${dtEnd}`);
+                ics.push(`SUMMARY:🚒 ${ev.tipo}`);
+                if (descrizione) ics.push(`DESCRIPTION:${descrizione}`);
+                ics.push('END:VEVENT');
+            });
+
+            ics.push('END:VCALENDAR');
+
+            const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `turni-vvf-${new Date().toISOString().split('T')[0]}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert(`✅ Esportati ${eventiDaEsportare.length} eventi!\n\nApri il file .ics scaricato con Google Calendar o Calendario iOS per importarli.`);
+        }
+
+        function apriGoogleCalendar() {
+            window.open('https://calendar.google.com', '_blank');
+        }
+
+        function apriCalendarioIOS() {
+            // Su iOS apre l'app Calendario
+            window.location.href = 'calshow://';
+            setTimeout(() => {
+                window.open('https://www.icloud.com/calendar', '_blank');
+            }, 1000);
+        }
+
+        // ========== MODIFICA 7 — BACKUP AUTOMATICO ==========
+
+        let backupTimer = null;
+
+        function salvaImpostazioniBackup() {
+            const frequenza = document.getElementById('backup-frequenza').value;
+            const servizio = document.getElementById('backup-servizio').value;
+
+            const impostazioniBackup = { frequenza, servizio, ultimoBackup: null };
+            localStorage.setItem('vvfBackupSettings', JSON.stringify(impostazioniBackup));
+
+            avviaBackupAutomatico();
+            aggiornaStatoBackup();
+            alert('✅ Impostazioni backup salvate!');
+        }
+
+        function avviaBackupAutomatico() {
+            if (backupTimer) clearInterval(backupTimer);
+
+            const settings = JSON.parse(localStorage.getItem('vvfBackupSettings') || '{}');
+            if (!settings.frequenza || settings.frequenza === 'mai') return;
+
+            const intervalli = {
+                'giornaliero': 24 * 60 * 60 * 1000,
+                'settimanale': 7 * 24 * 60 * 60 * 1000,
+                'mensile': 30 * 24 * 60 * 60 * 1000
+            };
+
+            const intervallo = intervalli[settings.frequenza];
+            if (!intervallo) return;
+
+            // Controlla se è ora di fare il backup
+            const ultimoBackup = settings.ultimoBackup ? new Date(settings.ultimoBackup).getTime() : 0;
+            const ora = Date.now();
+
+            if (ora - ultimoBackup >= intervallo) {
+                // Fai il backup adesso
+                setTimeout(() => eseguiBackupAutomatico(), 2000);
+            }
+
+            // Pianifica il prossimo
+            backupTimer = setInterval(() => {
+                eseguiBackupAutomatico();
+            }, intervallo);
+        }
+
+        function eseguiBackupAutomatico() {
+            const settingsBackup = JSON.parse(localStorage.getItem('vvfBackupSettings') || '{}');
+            if (!settingsBackup.frequenza || settingsBackup.frequenza === 'mai') return;
+
+            const ok = scaricaBackup();
+            if (ok) {
+                settingsBackup.ultimoBackup = new Date().toISOString();
+                localStorage.setItem('vvfBackupSettings', JSON.stringify(settingsBackup));
+                aggiornaStatoBackup();
+
+                // Apri il servizio cloud configurato dopo un delay
+                setTimeout(() => {
+                    apriServizioCloud(settingsBackup.servizio);
+                }, 1500);
+            }
+        }
+
+        function backupImmediato(servizio) {
+            const ok = scaricaBackup();
+            if (ok) {
+                const settingsBackup = JSON.parse(localStorage.getItem('vvfBackupSettings') || '{}');
+                settingsBackup.ultimoBackup = new Date().toISOString();
+                localStorage.setItem('vvfBackupSettings', JSON.stringify(settingsBackup));
+                aggiornaStatoBackup();
+
+                setTimeout(() => apriServizioCloud(servizio), 1000);
+            }
+        }
+
+        function apriServizioCloud(servizio) {
+            const urls = {
+                'drive': 'https://drive.google.com',
+                'onedrive': 'https://onedrive.live.com',
+                'icloud': 'https://www.icloud.com/iclouddrive/'
+            };
+            if (urls[servizio]) window.open(urls[servizio], '_blank');
+        }
+
+        function aggiornaStatoBackup() {
+            const settingsBackup = JSON.parse(localStorage.getItem('vvfBackupSettings') || '{}');
+
+            const ultimoEl = document.getElementById('ultimo-backup-auto');
+            const prossimoEl = document.getElementById('prossimo-backup');
+
+            if (ultimoEl && settingsBackup.ultimoBackup) {
+                ultimoEl.textContent = new Date(settingsBackup.ultimoBackup).toLocaleString('it-IT');
+            }
+
+            if (prossimoEl) {
+                if (!settingsBackup.frequenza || settingsBackup.frequenza === 'mai') {
+                    prossimoEl.textContent = 'Non configurato';
+                } else {
+                    const intervalli = { 'giornaliero': 1, 'settimanale': 7, 'mensile': 30 };
+                    const giorni = intervalli[settingsBackup.frequenza];
+                    if (settingsBackup.ultimoBackup) {
+                        const prossimo = new Date(new Date(settingsBackup.ultimoBackup).getTime() + giorni * 24 * 60 * 60 * 1000);
+                        prossimoEl.textContent = prossimo.toLocaleString('it-IT');
+                    } else {
+                        prossimoEl.textContent = 'Al prossimo avvio app';
+                    }
+                }
+            }
+
+            // Carica impostazioni nei select
+            const freqEl = document.getElementById('backup-frequenza');
+            const servEl = document.getElementById('backup-servizio');
+            if (freqEl && settingsBackup.frequenza) freqEl.value = settingsBackup.frequenza;
+            if (servEl && settingsBackup.servizio) servEl.value = settingsBackup.servizio;
+        }
     </script>
     
     <!-- Footer -->
@@ -3052,15 +3710,7 @@
             I dati sono salvati esclusivamente sul tuo dispositivo.
         </p>
     </footer>
-<!-- Banner AdMob in fondo alla pagina -->
-<div style="position:fixed; bottom:0; left:0; width:100%; text-align:center; z-index:9999; background:#fff; padding-bottom: env(safe-area-inset-bottom, 0px);">
-  <ins class="adsbygoogle"
-       style="display:block; width:100%; height:32px;"
-       data-ad-client="ca-app-pub-1783170728118774"
-       data-ad-slot="9030999205"
-       data-ad-format="banner"
-       data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
+<!-- Spazio per il banner nativo AdMob in fondo -->
+<div id="admob-banner-spacer" style="height:60px;"></div>
 </body>
 </html>
